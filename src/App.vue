@@ -1,5 +1,7 @@
 <template>
   <div id="app">
+    
+
     <Header />
     <GameControls />
     <HeadsUpDisplay />
@@ -33,7 +35,7 @@ export default {
     Header,
     GameControls,
     HeadsUpDisplay,
-    ChessBoard,
+    ChessBoard
   }
   // components: {
   //   Header,
@@ -74,6 +76,6 @@ export default {
 
 <style lang="scss">
 body {
-  background-color:#212529;
+  background-color: #212529;
 }
 </style>

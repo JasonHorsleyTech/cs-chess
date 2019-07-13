@@ -9,11 +9,14 @@
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
-    "express": "^4.17.1",
-    "socket.io": "^2.2.0",
+    "@fortawesome/fontawesome-svg-core": "^1.2.19",
+    "@fortawesome/free-solid-svg-icons": "^5.9.0",
+    "@fortawesome/vue-fontawesome": "^0.1.6",
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.0-rc.26",
+    "express": "^4.17.1",
     "lodash": "^4.17.14",
+    "socket.io": "^2.2.0",
     "vue": "^2.5.11"
   },
   "browserslist": [
