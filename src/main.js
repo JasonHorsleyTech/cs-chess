@@ -9,10 +9,10 @@ import _ from 'lodash';
 
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faChessRook, faChessQueen, faChessPawn, faChessKnight, faChessKing, faChessBishop, faSquareFull} from '@fortawesome/free-solid-svg-icons'
+import { faChessRook, faChessQueen, faChessPawn, faChessKnight, faChessKing, faChessBishop, faSquareFull, faCircle} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-library.add(faChessRook, faChessQueen, faChessPawn, faChessKnight, faChessKing, faChessBishop, faSquareFull)
+library.add(faChessRook, faChessQueen, faChessPawn, faChessKnight, faChessKing, faChessBishop, faSquareFull, faCircle)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
