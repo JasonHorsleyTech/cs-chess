@@ -1,0 +1,42 @@
+/* Allows for 
+    <a class="hover:scale-up-child-sm">
+        <span>This scales on hover, but not the a</span>
+    </a>
+*/
+.scale-up-child-sm > * {
+    @apply scale-up-sm;
+}
+.scale-up-child-md > * {
+    @apply scale-up-md;
+}
+.scale-up-child-lg > * {
+    @apply scale-up-lg;
+}
+.scale-up-child-xl > * {
+    @apply scale-up-xl;
+}
+.scale-up-child-2xl > * {
+    @apply scale-up-2xl;
+}
+.scale-up-child-3xl > * {
+    @apply scale-up-3xl;
+}
+/**/
+.hover\:scale-up-child-sm:hover > * {
+    @apply scale-up-sm;
+}
+.hover\:scale-up-child-md:hover > * {
+    @apply scale-up-md;
+}
+.hover\:scale-up-child-lg:hover > * {
+    @apply scale-up-lg;
+}
+.hover\:scale-up-child-xl:hover > * {
+    @apply scale-up-xl;
+}
+.hover\:scale-up-child-2xl:hover > * {
+    @apply scale-up-2xl;
+}
+.hover\:scale-up-child-3xl:hover > * {
+    @apply scale-up-3xl;
+}
