@@ -9,6 +9,6 @@
 const props = defineProps<{ piece: Piece }>();
 
 const styleSrc = computed(() => {
-  return `background-image: url('/pieces/${props.piece.player}-${props.piece.type}.svg');`;
+  return bgsvg(`${props.piece.player}-${props.piece.type}`);
 });
 </script>
