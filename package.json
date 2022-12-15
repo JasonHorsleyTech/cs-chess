@@ -8,6 +8,7 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
+    "@types/uuid": "^9.0.0",
     "autoprefixer": "^10.4.13",
     "nuxt": "3.0.0",
     "postcss": "^8.4.19",
@@ -15,6 +16,7 @@
   },
   "dependencies": {
     "peerjs": "^1.4.7",
+    "uuid": "^9.0.0",
     "web-audio-daw": "^4.13.1"
   }
 }
