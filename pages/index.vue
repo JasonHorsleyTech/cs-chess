@@ -5,7 +5,9 @@
 </template>
 <script lang="ts" setup>
 import { Peer } from "peerjs";
+import { v4 as uuidv4 } from "uuid";
 
+const secret = uuidv4();
 const router = useRouter();
 
 /**
@@ -24,6 +26,7 @@ const autostart = () => {
         path: "/game",
         query: {
           id,
+          secret,
           role: "host",
         },
       });

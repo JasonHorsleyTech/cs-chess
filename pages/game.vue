@@ -9,17 +9,16 @@
           type="text"
           readonly
           class="w-full"
-          :value="`localhost:3000/game?id=${id}&role=${'client'}&secret=${hostSecret}`"
+          :value="`localhost:3000/game?id=${id}&role=${'client'}&secret=${secret}`"
         />
       </template>
     </template>
-    <GameMain :TheGameConnector="TheGameConnector" />
+    <GameMain v-else :TheGameConnector="TheGameConnector" />
   </div>
 </template>
 <script lang="ts" setup>
 import { Peer } from "peerjs";
 import type { DataConnection } from "peerjs";
-import { v4 as uuidv4 } from "uuid";
 import GameConnector from "~/models/GameConnector";
 
 definePageMeta({
@@ -30,7 +29,7 @@ const route = useRoute();
 const id: string = `${route.query.id}`;
 const role: "host" | "client" =
   `${route.query.role}` === "host" ? "host" : "client";
-const hostSecret = uuidv4();
+const secret: string = `${route.query.secret}`;
 
 const status = ref<
   | "connecting-to-servers"
@@ -54,7 +53,7 @@ const setupDataConnection = () => {
       });
 
       ThePeerInstance.on("connection", (dc) => {
-        if (dc.metadata?.secret !== hostSecret) {
+        if (dc.metadata?.secret !== secret) {
           reject("Handshake failed");
         } else {
           resolve(dc);
@@ -71,7 +70,7 @@ const setupDataConnection = () => {
       ThePeerInstance.on("open", () => {
         status.value = "connecting-to-host";
         const dc = ThePeerInstance.connect(id, {
-          metadata: { secret: route.query.secret },
+          metadata: { secret },
         });
 
         resolve(dc);
