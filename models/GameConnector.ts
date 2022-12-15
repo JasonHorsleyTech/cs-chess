@@ -40,7 +40,8 @@ export default class GameConnector {
         } else {
           this.pingRoundTrip = Date.now() - event.content.stamp;
           if (this.pingRoundTrip < this.#maxPingRoundTrip) {
-            this.status = "connected";
+            if (this.status === "connecting") this.status = "connected";
+            
             this.pingResolve(this.pingRoundTrip);
           } else {
             this.pingReject(`Ping too high (${this.pingRoundTrip}ms)`);
