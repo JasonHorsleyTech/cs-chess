@@ -13,7 +13,11 @@
         />
       </template>
     </template>
-    <GameMain v-else :TheGameConnector="TheGameConnector" />
+    <GameMain
+      v-else
+      :TheGameConnector="TheGameConnector"
+      :player="role === 'host' ? 'white' : 'black'"
+    />
   </div>
 </template>
 <script lang="ts" setup>
