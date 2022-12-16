@@ -13,11 +13,7 @@
         />
       </template>
     </template>
-    <GameMain
-      v-else
-      :TheGameConnector="TheGameConnector"
-      :player="role === 'host' ? 'white' : 'black'"
-    />
+    <GameMain v-else :TheGameConnector="TheGameConnector" :role="role" />
   </div>
 </template>
 <script lang="ts" setup>
@@ -88,7 +84,7 @@ const setupDataConnection = () => {
 let TheGameConnector: GameConnector;
 const setupGameConnector = (dc: DataConnection) => {
   return new Promise<GameConnector>((resolve, reject) => {
-    TheGameConnector = new GameConnector(dc);
+    TheGameConnector = new GameConnector(dc, role);
 
     setTimeout(async () => {
       try {
@@ -111,12 +107,12 @@ onMounted(async () => {
   } catch (message) {
     status.value;
     error.value = `${message}`;
-    tearDown();
+    tearDown(error.value);
   }
 });
 
-const tearDown = () => {
-  TheGameConnector?.disconnect();
+const tearDown = (message?: string) => {
+  TheGameConnector?.disconnect(message);
   ThePeerInstance?.disconnect();
 };
 

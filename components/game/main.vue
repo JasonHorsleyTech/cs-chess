@@ -1,6 +1,10 @@
 <template>
   <div class="">
-    <BeatCounter class="ml-auto" :beat="TheGameRunner.beat" :measure="TheGameRunner.measure" />
+    <BeatCounter
+      class="ml-auto"
+      :beat="TheGameRunner.beat"
+      :measure="TheGameRunner.measure"
+    />
 
     <div class="grid place-content-center">
       <div v-for="(rIndex, row) in GameRunner.size" class="flex">
@@ -19,14 +23,25 @@ import GameRunner from "~~/models/GameRunner";
 
 const props = defineProps<{
   TheGameConnector: GameConnector;
-  player: "white" | "black";
+  role: "host" | "client";
 }>();
+
+// TODO: Game setup screen
+const player = computed(() => {
+  return props.role === "host" ? "white" : "black";
+});
 
 const TheGameRunner = reactive(new GameRunner());
 
 const count = ref(1);
-onMounted(() => {
-  TheGameRunner.start();
+onMounted(async () => {
+  try {
+    const startTime = await props.TheGameConnector.syncStart();
+    await delay(startTime - Date.now());
+    TheGameRunner.start();
+  } catch (error) {
+    // connection error... back to main?
+  }
 });
 onUnmounted(() => {
   TheGameRunner.stop();

@@ -9,29 +9,21 @@ export default class GameRunner {
   mode: "purchase" | "move";
 
   clock: NodeJS.Timer | number | null = null;
-  #deep: { test: number };
 
   constructor() {
     this.board = new Array(8).fill(new Array(8).fill(null));
     this.mode = "purchase";
-    this.#deep = {
-      test: 1,
-    };
+
   }
 
   // Start the game
   start() {
-    console.log("started");
     this.clock = setInterval(() => {
       this.tick();
     }, 250);
   }
   stop() {
     if (typeof this.clock === "number") clearInterval(this.clock);
-  }
-
-  test() {
-    this.#deep.test++;
   }
 
   /** Measure: --|0000|1111|2222|3333|-- **/
