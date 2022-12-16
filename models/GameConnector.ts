@@ -63,6 +63,7 @@ export default class GameConnector {
   initiate(type: DataConnectionEvent["type"], content: object = {}) {
     if (this.role === "host") return;
     this.send(type, content);
+    console.log("Client initiated event: ", { type, content });
   }
 
   /**
@@ -75,6 +76,8 @@ export default class GameConnector {
   hostReceive(receiveEvent: DataConnectionEvent) {
     const { type, content } = receiveEvent;
     const { resolve, reject } = this.callbacks[type];
+
+    console.log("Host received response from client: ", receiveEvent);
 
     if (resolve === null) {
       this.respond(type, content, "retry");
@@ -101,6 +104,8 @@ export default class GameConnector {
   clientReceive(responseEvent: DataConnectionEvent) {
     const { type, content, responseCode } = responseEvent;
     const { resolve, reject } = this.callbacks[type];
+
+    console.log("Client received response from host: ", responseEvent);
 
     if (!resolve) throw "Weird error, idk you figure it out.";
 
@@ -135,6 +140,8 @@ export default class GameConnector {
     if (this.role === "client")
       throw "Client does not respond to communication";
 
+    console.log(`Host responding to ${type} with: `, content);
+
     this.dc.send({
       type,
       content: Object.assign(content, { stamp: Date.now() }),
@@ -152,6 +159,7 @@ export default class GameConnector {
       this.callbacks["ping"] = {
         reject,
         resolve: (content: DataConnectionEvent["content"]) => {
+          console.log("Ping callback resolved");
           this.oneWayPing = Date.now() - content.stamp;
           if (this.oneWayPing >= this.#maxPing) {
             throw `Ping too high (${this.oneWayPing}ms`;
@@ -203,23 +211,3 @@ export default class GameConnector {
     this.dc.close();
   }
 }
-
-/*
-        if (typeof event.content.proposedStart !== "number") {
-          return this.rejectAll("sync-start", "Invalid event content");
-        }
-
-        if (this.callbacks["sync-start"].resolve.length === 0) {
-          console.error("Received a sync-start but no sync-start was sent");
-        }
-
-        if (Date.now() + this.oneWayPing * 2 > event.content.proposedStart) {
-          return this.rejectAll("sync-start", "Proposed start time too soon");
-        }
-
-        this.send("sync-start", {
-          proposedStart: event.content.proposedStart,
-        });
-
-        this.resolveAll("sync-start", event.content.proposedStart);
-*/
