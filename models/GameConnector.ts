@@ -63,7 +63,7 @@ export default class GameConnector {
   initiate(type: DataConnectionEvent["type"], content: object = {}) {
     if (this.role === "host") return;
     this.send(type, content);
-    console.log("Client initiated event: ", { type, content });
+    console.log("Client: I initiated event: ", { type, content });
   }
 
   /**
@@ -77,7 +77,7 @@ export default class GameConnector {
     const { type, content } = receiveEvent;
     const { resolve, reject } = this.callbacks[type];
 
-    console.log("Host received response from client: ", receiveEvent);
+    console.log("Host: I received response from client: ", receiveEvent);
 
     if (resolve === null) {
       this.respond(type, content, "retry");
@@ -88,6 +88,7 @@ export default class GameConnector {
       const responseContent = resolve(content);
       this.respond(type, responseContent, "ok");
     } catch (error) {
+      console.error(error);
       if (reject !== null) reject();
       this.respond(type, {}, "failed");
     }
@@ -105,7 +106,7 @@ export default class GameConnector {
     const { type, content, responseCode } = responseEvent;
     const { resolve, reject } = this.callbacks[type];
 
-    console.log("Client received response from host: ", responseEvent);
+    console.log("Client: I received response from host: ", responseEvent);
 
     if (!resolve) throw "Weird error, idk you figure it out.";
 
@@ -140,13 +141,14 @@ export default class GameConnector {
     if (this.role === "client")
       throw "Client does not respond to communication";
 
-    console.log(`Host responding to ${type} with: `, content);
-
-    this.dc.send({
+    const payload = {
       type,
       content: Object.assign(content, { stamp: Date.now() }),
       responseCode,
-    });
+    };
+    console.log(`Host: I responded to ${type} with: `, payload);
+
+    this.dc.send(payload);
   }
 
   oneWayPing: number = -1;
@@ -154,12 +156,12 @@ export default class GameConnector {
   /* ----------------------------- Events! ----------------------------- */
   ping() {
     return new Promise<void>((resolve, reject) => {
-      this.callbacks.ping.reject = reject;
-
+      // TODO: Callbacks is new EventCallback(), which sets resolve and reject, but also a timeout (which rejects) and an always (which clears everything out);
       this.callbacks["ping"] = {
-        reject,
+        reject: () => {
+          reject("Ping failed");
+        },
         resolve: (content: DataConnectionEvent["content"]) => {
-          console.log("Ping callback resolved");
           this.oneWayPing = Date.now() - content.stamp;
           if (this.oneWayPing >= this.#maxPing) {
             throw `Ping too high (${this.oneWayPing}ms`;
@@ -182,18 +184,16 @@ export default class GameConnector {
 
       this.callbacks["sync-start"] = {
         reject,
-        resolve: (event: DataConnectionEvent) => {
-          const latestProposed = Math.max(
-            event.content.proposedStart,
-            proposedStart
-          );
+        resolve: (content: DataConnectionEvent["content"]) => {
+          const latestProposed = Math.max(content.proposedStart, proposedStart);
+          const now = Date.now();
 
-          if (latestProposed - Date.now() >= this.#maxPing) {
-            throw `Sync start too high (${latestProposed - Date.now()}ms`;
+          if (latestProposed - now <= this.#maxPing) {
+            throw `Sync start too high (${latestProposed - Date.now()}ms)`;
           }
 
           resolve(latestProposed);
-          return Object.assign(event.content, {
+          return Object.assign(content, {
             proposedStart: latestProposed,
           });
         },
