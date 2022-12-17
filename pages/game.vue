@@ -59,6 +59,13 @@ const setupDataConnection = () => {
           resolve(dc);
         }
       });
+
+      ThePeerInstance.on("error", (error) => {
+        // @ts-ignore
+        if (error.type === 'unavailable-id') {
+            console.log("Copy the input idiot")
+        }
+      });
     } else {
       // Second one here
       if (typeof route.query.secret !== "string") {
