@@ -21,6 +21,7 @@ export default class GameConnector {
   callbacks: GameConnectorEventCallbacks = {
     ping: { resolve: null, reject: null },
     "sync-start": { resolve: null, reject: null },
+    "purchase-and-place": { resolve: null, reject: null },
   };
 
   constructor(dc: DataConnection, role: "host" | "client") {
@@ -200,6 +201,20 @@ export default class GameConnector {
       };
 
       this.initiate("sync-start", { proposedStart });
+    });
+  }
+
+  purchaseAndPlace() {
+    return new Promise<void>((resolve, reject) => {
+      //   this.callbacks["purchase-and-place"] = {
+      //     reject,
+      //     resolve: (content: DataConnectionEvent["content"]) => {
+      //       resolve();
+      //       return content;
+      //     },
+      //   };
+      // shit
+      //   this.send("purchase-and-place");
     });
   }
 

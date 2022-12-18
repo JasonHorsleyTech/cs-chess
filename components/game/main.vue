@@ -6,6 +6,14 @@
       :measure="TheGameRunner.measure"
     />
 
+    <p v-if="TheGameRunner.clock === null">Counting us off...</p>
+    <GamePurchaseMode
+      v-else-if="TheGameRunner.gameMode === 'purchase'"
+      @purchaseAndPlace="purchaseAndPlace(piece, location)"
+    />
+    <GameMoveMode v-else-if="TheGameRunner.gameMode === 'move'" />
+    <!-- TODO: Breather between matches. -->
+    <!-- 
     <div class="grid place-content-center">
       <div v-for="(rIndex, row) in GameRunner.size" class="flex">
         <div v-for="(cIndex, col) in GameRunner.size" class="grid">
@@ -14,7 +22,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 <script lang="ts" setup>
@@ -31,7 +39,30 @@ const player = computed(() => {
   return props.role === "host" ? "white" : "black";
 });
 
-const TheGameRunner = reactive(new GameRunner());
+const TheGameRunner = reactive(
+  new GameRunner({
+    player: player.value,
+  })
+);
+
+const purchaseAndPlace = async (piece: Piece, location: BoardLocation) => {
+  const [confirmPlacement, rejectPlacement] = TheGameRunner.purchaseAndPlace(
+    piece,
+    location,
+    player.value
+  );
+  
+  try {
+    await props.TheGameConnector.syncPurchaseAndPlace(
+      player.value,
+      piece,
+      location
+    );
+    confirmPlacement();
+  } catch (error) {
+    rejectPlacement();
+  }
+};
 
 const count = ref(1);
 onMounted(async () => {

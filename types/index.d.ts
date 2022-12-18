@@ -1,18 +1,25 @@
 declare global {
+  type ConfirmRejectCallbacks = [() => void, (rejectReason? = string) => void];
+
   interface DataConnectionEvent {
-    type: "ping" | "sync-start";
+    type: "ping" | "sync-start" | "purchase-and-place";
     content: {
       stamp: number;
       [key: string]: any;
     };
     responseCode?: "ok" | "retry" | "failed";
   }
+
   interface GameConnectorEventCallbacks {
     ping: {
       resolve: null | ((any) => DataConnectionEvent["content"]);
       reject: null | (() => void);
     };
     "sync-start": {
+      resolve: null | ((any) => DataConnectionEvent["content"]);
+      reject: null | (() => void);
+    };
+    "purchase-and-place": {
       resolve: null | ((any) => DataConnectionEvent["content"]);
       reject: null | (() => void);
     };
@@ -28,11 +35,16 @@ declare global {
     r: number;
     c: number;
   }
+
+  type PieceType = "pawn" | "knight" | "bishop" | "rook" | "queen" | "king";
+
   interface Piece {
     player: "black" | "white";
-    type: "pawn" | "rook" | "knight" | "bishop" | "king" | "queen";
+    type: PieceType;
     location: BoardLocation;
     moveTo: null | BoardLocation;
+    purchaseVerified: boolean;
+    // Has player 2 also verified the move/purchase?
   }
 }
 export {};
