@@ -7,6 +7,7 @@ declare global {
       stamp: number;
       [key: string]: any;
     };
+    handleAs: "host" | "client";
     responseCode?: "ok" | "retry" | "failed";
   }
 

@@ -15,7 +15,6 @@ export default class GameConnector {
   #maxPing = 500;
 
   dc: DataConnection;
-  role: "host" | "client";
 
   status: "connecting" | "connected" | "disconnected" = "connecting";
   callbacks: GameConnectorEventCallbacks = {
@@ -24,9 +23,8 @@ export default class GameConnector {
     "purchase-and-place": { resolve: null, reject: null },
   };
 
-  constructor(dc: DataConnection, role: "host" | "client") {
+  constructor(dc: DataConnection) {
     this.dc = dc;
-    this.role = role;
 
     this.dc.on("data", (d) => {
       if (isDataConnectionEvent(d)) {
@@ -52,19 +50,9 @@ export default class GameConnector {
    * Handle incoming messages from PeerJS: Branch path for client and host
    */
   receive(event: DataConnectionEvent) {
-    return this.role === "client"
-      ? this.clientReceive(event)
-      : this.hostReceive(event);
-  }
-
-  /**
-   * Initiate an event, like a ping.
-   * Only the client initiates events
-   */
-  initiate(type: DataConnectionEvent["type"], content: object = {}) {
-    if (this.role === "host") return;
-    this.send(type, content);
-    console.log("Client: I initiated event: ", { type, content });
+    return typeof event.responseCode === "undefined"
+      ? this.processNewEvent(event)
+      : this.receieveProcessedEvent(event);
   }
 
   /**
@@ -74,7 +62,7 @@ export default class GameConnector {
    * Try to resolve, then tell client ok.
    * If you couldn't resolve, fail and tell client.
    */
-  hostReceive(receiveEvent: DataConnectionEvent) {
+  processNewEvent(receiveEvent: DataConnectionEvent) {
     const { type, content } = receiveEvent;
     const { resolve, reject } = this.callbacks[type];
 
@@ -96,14 +84,14 @@ export default class GameConnector {
   }
 
   /**
-   * Client receives an event, like a ping, from the host
+   * Client gets their initiated event returned, after host processed it
    *
    * Retry: Host didn't set up his event yet... Try again three times
    * Failed: Host rejected the event. You should too
    * OK: Host has already resolved event specific promises. You should too.
    */
   retryCount = 0;
-  clientReceive(responseEvent: DataConnectionEvent) {
+  receieveProcessedEvent(responseEvent: DataConnectionEvent) {
     const { type, content, responseCode } = responseEvent;
     const { resolve, reject } = this.callbacks[type];
 
@@ -139,9 +127,6 @@ export default class GameConnector {
     content: object = {},
     responseCode: DataConnectionEvent["responseCode"]
   ) {
-    if (this.role === "client")
-      throw "Client does not respond to communication";
-
     const payload = {
       type,
       content: Object.assign(content, { stamp: Date.now() }),
@@ -153,9 +138,8 @@ export default class GameConnector {
   }
 
   oneWayPing: number = -1;
-
   /* ----------------------------- Events! ----------------------------- */
-  ping() {
+  ping(initiate: boolean = true) {
     return new Promise<void>((resolve, reject) => {
       // TODO: Callbacks is new EventCallback(), which sets resolve and reject, but also a timeout (which rejects) and an always (which clears everything out);
       this.callbacks["ping"] = {
@@ -175,11 +159,11 @@ export default class GameConnector {
         },
       };
 
-      this.initiate("ping");
+      if (initiate) this.send("ping");
     });
   }
 
-  syncStart() {
+  syncStart(initiate: boolean = true) {
     return new Promise<number>((resolve, reject) => {
       const proposedStart = Date.now() + 1000;
 
@@ -200,7 +184,7 @@ export default class GameConnector {
         },
       };
 
-      this.initiate("sync-start", { proposedStart });
+      if (initiate) this.send("sync-start", { proposedStart });
     });
   }
 

@@ -51,7 +51,7 @@ const purchaseAndPlace = async (piece: Piece, location: BoardLocation) => {
     location,
     player.value
   );
-  
+
   try {
     await props.TheGameConnector.syncPurchaseAndPlace(
       player.value,
@@ -67,7 +67,9 @@ const purchaseAndPlace = async (piece: Piece, location: BoardLocation) => {
 const count = ref(1);
 onMounted(async () => {
   try {
-    const startTime = await props.TheGameConnector.syncStart();
+    const startTime = await props.TheGameConnector.syncStart(
+      props.role === "client"
+    );
     await delay(startTime - Date.now());
     TheGameRunner.start();
   } catch (error) {

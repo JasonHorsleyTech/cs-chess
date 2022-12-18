@@ -62,8 +62,8 @@ const setupDataConnection = () => {
 
       ThePeerInstance.on("error", (error) => {
         // @ts-ignore
-        if (error.type === 'unavailable-id') {
-            console.log("Copy the input idiot")
+        if (error.type === "unavailable-id") {
+          console.log("Copy the input idiot");
         }
       });
     } else {
@@ -91,11 +91,11 @@ const setupDataConnection = () => {
 let TheGameConnector: GameConnector;
 const setupGameConnector = (dc: DataConnection) => {
   return new Promise<GameConnector>((resolve, reject) => {
-    TheGameConnector = new GameConnector(dc, role);
+    TheGameConnector = new GameConnector(dc);
 
     setTimeout(async () => {
       try {
-        await TheGameConnector.ping();
+        await TheGameConnector.ping(role === "client");
         resolve(TheGameConnector);
       } catch (message) {
         reject(message);
