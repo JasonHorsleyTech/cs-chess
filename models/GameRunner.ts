@@ -1,3 +1,5 @@
+import Piece from "./Piece";
+
 export default class GameRunner {
   static size: number = 8;
 
@@ -62,7 +64,7 @@ export default class GameRunner {
   /**
    * How many pieces does the current player have?
    */
-  get pieceCount(): { [key in Piece["type"]]: number } {
+  get pieceCount(): { [key in PieceTypes]: number } {
     const pieceCount = {
       pawn: 0,
       knight: 0,
@@ -85,9 +87,9 @@ export default class GameRunner {
   /**
    * TODO: Config swap out so I can play test different pricing schemes
    */
-  get piecePrices(): { [key in Piece["type"]]: number } {
+  get piecePrices(): { [key in PieceTypes]: number } {
     // Price progression: Anything above highest price is double the last value
-    const priceMap: { [key in Piece["type"]]: Array<number> } = {
+    const priceMap: { [key in PieceTypes]: Array<number> } = {
       pawn: new Array(8).fill(1).concat(new Array(4).fill(2)).concat([3]),
       knight: [3, 4],
       bishop: [3, 4],
@@ -96,7 +98,7 @@ export default class GameRunner {
       king: [0, 4, 15, 25],
     };
 
-    const currentPrices: { [key in Piece["type"]]: number } = {
+    const currentPrices: { [key in PieceTypes]: number } = {
       pawn: 0,
       knight: 0,
       bishop: 0,
@@ -105,7 +107,7 @@ export default class GameRunner {
       king: 0,
     };
 
-    (Object.keys(priceMap) as Array<Piece["type"]>).map((type) => {
+    pieceTypes.map((type) => {
       const count = this.pieceCount[type];
       currentPrices[type] =
         priceMap[type].length < count
@@ -116,12 +118,14 @@ export default class GameRunner {
     return currentPrices;
   }
 
-  purchaseAndPlace(
-    piece: Piece,
-    location: BoardLocation,
-    player: "black" | "white"
-  ): ConfirmRejectCallbacks {
-    const price = this.piecePrices[piece.type];
+  purchaseAndPlace(payload: {
+    pieceType: PieceTypes;
+    location: BoardLocation;
+    player: "black" | "white";
+  }): ConfirmRejectCallbacks {
+    const { pieceType, location, player } = payload;
+
+    const price = this.piecePrices[pieceType];
     if (this.gameMode !== "purchase")
       throw "Cannot purchase piece when not in purchase mode";
     if (this.gameBoard[location.r][location.c] !== null)
@@ -129,7 +133,13 @@ export default class GameRunner {
     if (price > this.cash[player]) throw "Cannot afford that piece";
 
     this.cash[player] -= price;
-    this.gameBoard[location.r][location.c] = piece;
+    this.gameBoard[location.r][location.c] = new Piece(
+      player,
+      pieceType,
+      location,
+      null,
+      false
+    );
 
     return [
       () => {

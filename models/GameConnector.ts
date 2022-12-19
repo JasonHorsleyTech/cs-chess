@@ -187,9 +187,14 @@ export default class GameConnector {
       if (initiate) this.send("sync-start", { proposedStart });
     });
   }
-
-  purchaseAndPlace() {
+  purchaseAndPlace(payload: {
+    pieceType: PieceTypes;
+    location: BoardLocation;
+    player: "black" | "white";
+  }) {
     return new Promise<void>((resolve, reject) => {
+      this.send("purchase-and-place", payload);
+
       //   this.callbacks["purchase-and-place"] = {
       //     reject,
       //     resolve: (content: DataConnectionEvent["content"]) => {

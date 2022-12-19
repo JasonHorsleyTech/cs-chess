@@ -36,11 +36,11 @@ declare global {
     c: number;
   }
 
-  type PieceType = "pawn" | "knight" | "bishop" | "rook" | "queen" | "king";
+  type PieceTypes = "pawn" | "rook" | "knight" | "bishop" | "queen" | "king";
 
   interface Piece {
     player: "black" | "white";
-    type: PieceType;
+    type: PieceTypes;
     location: BoardLocation;
     moveTo: null | BoardLocation;
     purchaseVerified: boolean;

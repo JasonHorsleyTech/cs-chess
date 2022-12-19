@@ -8,8 +8,9 @@
 
     <p v-if="TheGameRunner.clock === null">Counting us off...</p>
     <GamePurchaseMode
+      :player="player"
       v-else-if="TheGameRunner.gameMode === 'purchase'"
-      @purchaseAndPlace="purchaseAndPlace(piece, location)"
+      @purchaseAndPlace="purchaseAndPlace"
     />
     <GameMoveMode v-else-if="TheGameRunner.gameMode === 'move'" />
     <!-- TODO: Breather between matches. -->
@@ -45,18 +46,24 @@ const TheGameRunner = reactive(
   })
 );
 
-const purchaseAndPlace = async (piece: Piece, location: BoardLocation) => {
+// Some GameConnector callbacks do not require any variable game state, and can be setup right away.
+setupKnownGameConnectorCallbacks(props.TheGameConnector, TheGameRunner);
+
+const purchaseAndPlace = async (
+  pieceType: PieceTypes,
+  location: BoardLocation
+) => {
   const [confirmPlacement, rejectPlacement] = TheGameRunner.purchaseAndPlace(
-    piece,
+    pieceType,
     location,
     player.value
   );
 
   try {
-    await props.TheGameConnector.syncPurchaseAndPlace(
-      player.value,
-      piece,
-      location
+    await props.TheGameConnector.purchaseAndPlace(
+        pieceType,
+        location
+        player.value,
     );
     confirmPlacement();
   } catch (error) {
