@@ -9,7 +9,7 @@
           type="text"
           readonly
           class="w-full"
-          :value="`localhost:3000/game?id=${id}&role=${'client'}&secret=${secret}`"
+          :value="`localhost:3000/play?id=${id}&role=${'client'}&secret=${secret}`"
         />
       </template>
     </template>

@@ -7,12 +7,12 @@
     />
 
     <p v-if="TheGameRunner.clock === null">Counting us off...</p>
-    <GamePurchaseMode
+    <GameModePurchase
       :player="player"
       v-else-if="TheGameRunner.gameMode === 'purchase'"
       @purchaseAndPlace="purchaseAndPlace"
     />
-    <GameMoveMode v-else-if="TheGameRunner.gameMode === 'move'" />
+    <GameModeMove v-else-if="TheGameRunner.gameMode === 'move'" />
     <!-- TODO: Breather between matches. -->
     <!-- 
     <div class="grid place-content-center">
