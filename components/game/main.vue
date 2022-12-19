@@ -36,7 +36,7 @@ const props = defineProps<{
 }>();
 
 // TODO: Game setup screen
-const player = computed(() => {
+const player = computed<"black" | "white">(() => {
   return props.role === "host" ? "white" : "black";
 });
 
@@ -53,25 +53,22 @@ const purchaseAndPlace = async (
   pieceType: PieceTypes,
   location: BoardLocation
 ) => {
-  const [confirmPlacement, rejectPlacement] = TheGameRunner.purchaseAndPlace(
+  const payload = {
     pieceType,
     location,
-    player.value
-  );
+    player: player.value,
+  };
+  const [confirmPlacement, rejectPlacement] =
+    TheGameRunner.purchaseAndPlace(payload);
 
   try {
-    await props.TheGameConnector.purchaseAndPlace(
-        pieceType,
-        location
-        player.value,
-    );
+    await props.TheGameConnector.purchaseAndPlace(payload);
     confirmPlacement();
   } catch (error) {
     rejectPlacement();
   }
 };
 
-const count = ref(1);
 onMounted(async () => {
   try {
     const startTime = await props.TheGameConnector.syncStart(

@@ -23,7 +23,7 @@ const autostart = () => {
   PeerInstance.on("open", (id: string) => {
     PeerInstance.on("disconnected", () => {
       navigateTo({
-        path: "/game",
+        path: "/play",
         query: {
           id,
           secret,
