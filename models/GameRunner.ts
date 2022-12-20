@@ -65,13 +65,32 @@ export default class GameRunner {
     if (this.beat === 2 && this.measure === 3) {
       // If sync hasn't resolved, fail the game
     }
+
+    if (this.beat === 0 && this.measure === 0) {
+      let piecesLocked = 0;
+
+      this.gameBoard.map((row) => {
+        row.map((piece) => {
+          if (piece === null) return;
+
+          if (piece.purchaseLocked === false) {
+            piece.purchaseLocked = true;
+            piecesLocked++;
+          }
+        });
+      });
+
+    //   if (piecesLocked === 0) {
+    //     this.gameMode = "move";
+    //   }
+    }
   }
 
   /**
    * How many pieces does the current player have?
    */
-  get pieceCount(): { [key in PieceTypes]: number } {
-    const pieceCount = {
+  get pieceCounts(): { [key in PieceTypes]: number } {
+    const pieceCounts = {
       pawn: 0,
       knight: 0,
       bishop: 0,
@@ -83,11 +102,11 @@ export default class GameRunner {
     this.gameBoard.map((row) => {
       row.map((piece) => {
         if (piece === null || piece.player !== this.player) return;
-        pieceCount[piece.type]++;
+        pieceCounts[piece.type]++;
       });
     });
 
-    return pieceCount;
+    return pieceCounts;
   }
 
   /**
@@ -97,8 +116,8 @@ export default class GameRunner {
     // Price progression: Anything above highest price is double the last value
     const priceMap: { [key in PieceTypes]: Array<number> } = {
       pawn: new Array(8).fill(1).concat(new Array(4).fill(2)).concat([3]),
-      knight: [3, 4],
-      bishop: [3, 4],
+      knight: [3, 4, 5],
+      bishop: [3, 4, 5],
       rook: [5, 5, 8],
       queen: [9, 20, 25],
       king: [0, 4, 15, 25],
@@ -113,10 +132,10 @@ export default class GameRunner {
       king: 0,
     };
 
-    pieceTypes.map((type) => {
-      const count = this.pieceCount[type];
+    Piece.allTypes.map((type) => {
+      const count = this.pieceCounts[type];
       currentPrices[type] =
-        priceMap[type].length < count
+        priceMap[type].length <= count
           ? priceMap[type][priceMap[type].length - 1]
           : priceMap[type][count];
     });

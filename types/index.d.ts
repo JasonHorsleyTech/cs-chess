@@ -1,3 +1,5 @@
+import Piece from "~~/models/Piece";
+
 declare global {
   type ConfirmRejectCallbacks = [() => void, (rejectReason? = string) => void];
 
@@ -36,15 +38,6 @@ declare global {
     c: number;
   }
 
-  type PieceTypes = "pawn" | "rook" | "knight" | "bishop" | "queen" | "king";
-
-  interface Piece {
-    player: "black" | "white";
-    type: PieceTypes;
-    location: BoardLocation;
-    moveTo: null | BoardLocation;
-    purchaseVerified: boolean;
-    // Has player 2 also verified the move/purchase?
-  }
+  type PieceTypes = "pawn" | "knight" | "bishop" | "rook" | "queen" | "king";
 }
 export {};

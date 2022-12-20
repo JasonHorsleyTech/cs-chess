@@ -2,7 +2,7 @@
   <div
     class="relative p-4 h-16 w-16 mx-auto"
     :class="[
-      disabled ? '' : 'group cursor-pointer',
+      disabled ? 'opacity-50 pointer-events-none' : 'group cursor-pointer',
       selected ? 'scale-110' : 'scale-100',
     ]"
   >
@@ -17,9 +17,10 @@
       ></div>
 
       <span
-        class="rounded-md border border-gray-300 text-white bg-gray-500 text-center px-1 text-xs mx-auto -translate-y-1/2 shadow"
+        class="rounded-md border font-bold text-center px-1 text-xs mx-auto -translate-y-1/2 shadow"
+        :class="[countColor]"
       >
-        Free!
+        {{ price === 0 ? "Free!" : `$${price}` }}
       </span>
     </div>
 
@@ -30,10 +31,11 @@
     ></Piece>
 
     <span
-      class="absolute top-0 right-0 rounded-full bg-red-600 text-white w-4 h-4 overflow-hidden text-[8px] font-bold border border-red-700"
+      class="absolute top-0 right-0 rounded-full w-4 h-4 overflow-hidden text-[8px] font-bold border"
+      :class="countColor"
     >
       <span class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
-        0
+        {{ count }}
       </span>
     </span>
   </div>
@@ -44,7 +46,22 @@ import Piece from "../Piece.vue";
 const props = defineProps<{
   pieceType: Piece["type"];
   player: "black" | "white";
+  price: number;
+  count: number;
   disabled: Boolean;
   selected: Boolean;
 }>();
+
+const normal = { pawn: 8, knight: 2, rook: 2, bishop: 2, king: 1, queen: 1 }[
+  props.pieceType
+];
+const countColor = computed(() => {
+  if (props.count < normal)
+    return `bg-green-700/75 text-green-100 border-green-300`;
+
+  if (props.count === normal)
+    return `bg-yellow-300/75 text-yellow-900 border-yellow-900`;
+
+  return `bg-red-300/75 text-red-900 border-red-900`;
+});
 </script>

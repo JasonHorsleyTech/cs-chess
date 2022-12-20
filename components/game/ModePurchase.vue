@@ -1,21 +1,39 @@
 <template>
   <div class="grid gap-4">
+    <div class="grid">
+      <h2 class="">Purchase and place pieces.</h2>
+      <h2>Both players must skip a turn to start.</h2>
+    </div>
+
     <div class="flex justify-between items-center">
-      <BeatCounter
-        class=""
-        :beat="TheGameRunner.beat"
-        :measure="TheGameRunner.measure"
-      />
+      <div
+        class="700 bg-white font-xl py-2 rounded-full font-bold text-xl px-4 border"
+      >
+        <BeatCounter
+          class=""
+          :beat="TheGameRunner.beat"
+          :measure="TheGameRunner.measure"
+        />
+      </div>
       <p
-        class="text-green-700 bg-white font-xl p-1 rounded-full font-bold text-xl px-4 border"
+        class="text-green-700 bg-white font-xl py-1 rounded-full font-bold text-lg px-4 border"
       >
         ${{ TheGameRunner.cash[TheGameRunner.player] }}
       </p>
     </div>
-    <div class="grid place-content-center">
+
+    <div
+      class="flex mx-auto border border-gray-400"
+      :class="[
+        TheGameRunner.player === 'black' ? 'flex-col-reverse' : 'flex-col',
+      ]"
+    >
       <div
         v-for="(row, r) in TheGameRunner.gameBoard"
-        class="flex border-r border-l first:border-t last:border-b border-gray-300"
+        class="flex border-gray-300"
+        :class="[
+          TheGameRunner.player === 'black' ? 'flex-row-reverse' : 'flex-row',
+        ]"
       >
         <div v-for="(pieceOnBoard, c) in row" class="grid">
           <div
@@ -27,12 +45,17 @@
                 ? 'hover:bg-gray-400 cursor-pointer'
                 : 'pointer-events-none',
             ]"
-            @click="handlePurchase({ r, c })"
+            @click="handleBoardClick({ r, c })"
           >
             <GamePiece
               v-if="pieceOnBoard !== null"
               :pieceType="pieceOnBoard.type"
               :player="pieceOnBoard.player"
+              :class="[
+                pieceOnBoard?.purchaseLocked
+                  ? 'opacity-100'
+                  : 'opacity-50 group-hover:animate-wiggle group-hover:w-3/4',
+              ]"
             />
             <GamePiece
               class="w-1/2 hidden group-hover:block"
@@ -47,13 +70,19 @@
 
     <div class="relative grid grid-cols-3 grid-rows-2 gap-4 place-content-end">
       <GameUIPurchasePiece
-        v-for="pieceType in pieceTypes"
+        v-for="pieceType in Piece.allTypes"
         :pieceType="pieceType"
         :player="player"
-        :disabled="false"
+        :disabled="
+          TheGameRunner.cash[TheGameRunner.player] <
+          TheGameRunner.piecePrices[pieceType]
+        "
+        :count="TheGameRunner.pieceCounts[pieceType]"
+        :price="TheGameRunner.piecePrices[pieceType]"
         @click="toPurchase = pieceType"
         :selected="toPurchase === pieceType"
       />
+
       <div
         v-if="toPurchase !== null"
         class="absolute inset-0 bg-gray-300/25 grid place-content-center rounded-xl group cursor-pointer hover:bg-gray-400/50 transition-all"
@@ -70,6 +99,7 @@
 </template>
 <script lang="ts" setup>
 import GameRunner from "~~/models/GameRunner";
+import Piece from "~~/models/Piece";
 
 const props = defineProps<{
   player: "white" | "black";
@@ -82,10 +112,16 @@ const emit = defineEmits<{
 
 const toPurchase = ref<null | PieceTypes>(null);
 
-const handlePurchase = (loc: BoardLocation) => {
+const handleBoardClick = (loc: BoardLocation) => {
+  // Handle removal
+
   if (toPurchase.value === null) return;
   emit("purchaseAndPlace", toPurchase.value, loc);
   toPurchase.value = null;
+};
+
+const undoPurchase = (piece: Piece) => {
+  if (piece.purchaseLocked) return false;
 };
 
 const canPlace = (location: BoardLocation) => {
