@@ -1,11 +1,5 @@
 <template>
-  <div class="">
-    <BeatCounter
-      class="ml-auto"
-      :beat="TheGameRunner.beat"
-      :measure="TheGameRunner.measure"
-    />
-
+  <div class="max-w-xl mx-auto py-4">
     <p v-if="TheGameRunner.clock === null">Counting us off...</p>
     <GameModePurchase
       :player="player"

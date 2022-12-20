@@ -1,8 +1,10 @@
 <template>
   <div
     :style="styleSrc"
-    class="h-full w-full bg-center bg-no-repeat bg-contain"
-  />
+    class="w-full self-center mx-auto bg-center bg-no-repeat bg-contain"
+  >
+    &nbsp;
+  </div>
 </template>
 <script setup lang="ts">
 const props = defineProps<{

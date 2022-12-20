@@ -1,0 +1,4 @@
+- Move TheGamerRunner and TheGameConnector into state
+- Extract TheGameConnector callbacks to their own object.
+- Handle chrome setInterval throttling during tab blur
+- Fix HMR so I always get a good re-setup

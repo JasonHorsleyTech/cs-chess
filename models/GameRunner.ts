@@ -134,8 +134,10 @@ export default class GameRunner {
     const price = this.piecePrices[pieceType];
     if (this.gameMode !== "purchase")
       throw "Cannot purchase piece when not in purchase mode";
+
     if (this.gameBoard[location.r][location.c] !== null)
       throw "Cannot place on non-empty location";
+
     if (price > this.cash[player]) throw "Cannot afford that piece";
 
     this.cash[player] -= price;
