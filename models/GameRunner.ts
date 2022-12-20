@@ -19,9 +19,16 @@ export default class GameRunner {
     this.player = setupOptions.player;
 
     this.gameMode = "purchase";
-    this.gameBoard = new Array(GameRunner.size).fill(
-      new Array(GameRunner.size).fill(null)
-    );
+    this.gameBoard = [
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+    ];
   }
 
   // Start the game
@@ -38,7 +45,6 @@ export default class GameRunner {
   /** Measure: --|0000|1111|2222|3333|-- **/
   /** Beat:    --|0123|0123|0123|0123|-- **/
   tick() {
-    console.log(this.beat);
     this.beat++;
 
     if (this.beat >= 4) {
@@ -122,7 +128,7 @@ export default class GameRunner {
     pieceType: PieceTypes;
     location: BoardLocation;
     player: "black" | "white";
-  }): ConfirmRejectCallbacks {
+  }): Piece {
     const { pieceType, location, player } = payload;
 
     const price = this.piecePrices[pieceType];
@@ -133,26 +139,8 @@ export default class GameRunner {
     if (price > this.cash[player]) throw "Cannot afford that piece";
 
     this.cash[player] -= price;
-    this.gameBoard[location.r][location.c] = new Piece(
-      player,
-      pieceType,
-      location,
-      null,
-      false
-    );
-
-    return [
-      () => {
-        let boardLoc = this.gameBoard[location.r][location.c];
-        if (boardLoc === null) throw "TODO: Figure this out, good luck";
-
-        boardLoc.purchaseVerified = true;
-      },
-      (rejectReason) => {
-        // TODO: Check for valid reject reason (didn't sync in time) and cheater flag
-        this.gameBoard[location.r][location.c] = null;
-        this.cash[player] += price;
-      },
-    ];
+    const piece = new Piece(player, pieceType, location, null, false);
+    this.gameBoard[location.r][location.c] = piece;
+    return piece;
   }
 }

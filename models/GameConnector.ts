@@ -75,7 +75,9 @@ export default class GameConnector {
 
     try {
       const responseContent = resolve(content);
-      this.respond(type, responseContent, "ok");
+      setTimeout(() => {
+          this.respond(type, responseContent, "ok");
+      }, 300)
     } catch (error) {
       console.error(error);
       if (reject !== null) reject();
@@ -166,9 +168,18 @@ export default class GameConnector {
   syncStart(initiate: boolean = true) {
     return new Promise<number>((resolve, reject) => {
       const proposedStart = Date.now() + 1000;
+      const unsetCallbacks = () => {
+        this.callbacks["sync-start"] = {
+          reject: null,
+          resolve: null,
+        };
+      };
 
       this.callbacks["sync-start"] = {
-        reject,
+        reject: () => {
+          unsetCallbacks();
+          reject();
+        },
         resolve: (content: DataConnectionEvent["content"]) => {
           const latestProposed = Math.max(content.proposedStart, proposedStart);
           const now = Date.now();
@@ -178,6 +189,7 @@ export default class GameConnector {
           }
 
           resolve(latestProposed);
+          unsetCallbacks();
           return Object.assign(content, {
             proposedStart: latestProposed,
           });
@@ -187,6 +199,7 @@ export default class GameConnector {
       if (initiate) this.send("sync-start", { proposedStart });
     });
   }
+
   purchaseAndPlace(payload: {
     pieceType: PieceTypes;
     location: BoardLocation;
