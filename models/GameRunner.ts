@@ -80,9 +80,9 @@ export default class GameRunner {
         });
       });
 
-    //   if (piecesLocked === 0) {
-    //     this.gameMode = "move";
-    //   }
+      if (piecesLocked === 0) {
+        this.gameMode = "move";
+      }
     }
   }
 
@@ -162,6 +162,62 @@ export default class GameRunner {
     this.cash[player] -= price;
     const piece = new Piece(player, pieceType, location, null, false);
     this.gameBoard[location.r][location.c] = piece;
+    return piece;
+  }
+
+  movePiece(payload: {
+    piece: Piece;
+    moveTo: BoardLocation;
+    player: "black" | "white";
+  }): Piece {
+    const { piece, moveTo, player } = payload;
+
+    if (this.gameMode !== "move") {
+      throw "Cannot move piece when not in move mode";
+    }
+
+    if (moveTo.r < 0 || moveTo.r > 7 || moveTo.c < 0 || moveTo.c > 7) {
+      throw "Can't move off board";
+    }
+
+    // Can't take your own piece
+    if (this.gameBoard[moveTo.r][moveTo.c]?.player === player) {
+        throw "Can't take your own piece"
+    }
+
+    const moveFrom = piece.location;
+    const distanceHorizontal = Math.abs(moveFrom.c - moveTo.c);
+    const distanceVertical = Math.abs(moveFrom.r - moveTo.r);
+    const validDiagonal =
+      Math.abs(distanceVertical) === Math.abs(distanceHorizontal);
+    const validStraight = moveFrom.r === moveTo.r || moveFrom.c === moveTo.c;
+    switch (piece.type) {
+      case "pawn":
+        // if (moveFrom.r)
+      case "knight":
+        if (
+          (distanceHorizontal === 2 && distanceVertical === 1) ||
+          (distanceHorizontal === 1 && distanceVertical === 2)
+        ) {
+            break;
+        } else {
+            throw "Not a valid knight move";
+        }
+      case "bishop":
+        if (!validDiagonal) throw "Not a valid bishop move";
+      case "rook":
+        if (!validStraight) throw "Not a valid rook move";
+      case "queen":
+        if (!validDiagonal && !validStraight) throw "Not a valid queen move";
+      case "king":
+        if (
+          Math.abs(moveFrom.r - moveTo.r) > 1 ||
+          Math.abs(moveFrom.c - moveTo.c) > 1
+        )
+          throw "Not a valid king move";
+    }
+
+    piece.moveTo = moveTo;
     return piece;
   }
 }

@@ -7,7 +7,11 @@
       v-else-if="TheGameRunner.gameMode === 'purchase'"
       @purchaseAndPlace="purchaseAndPlace"
     />
-    <GameModeMove v-else-if="TheGameRunner.gameMode === 'move'" />
+    <GameModeMove
+      v-else-if="TheGameRunner.gameMode === 'move'"
+      :player="player"
+      :TheGameRunner="TheGameRunner"
+    />
     <!-- TODO: Breather between matches. -->
     <!-- 
     <div class="grid place-content-center">
@@ -24,6 +28,7 @@
 <script lang="ts" setup>
 import GameConnector from "~~/models/GameConnector";
 import GameRunner from "~~/models/GameRunner";
+import Piece from "~~/models/Piece";
 
 const props = defineProps<{
   TheGameConnector: GameConnector;
@@ -109,6 +114,9 @@ onMounted(async () => {
       props.role === "client"
     );
     await delay(startTime - Date.now());
+
+    debugGameState(TheGameRunner);
+
     TheGameRunner.start();
   } catch (error) {
     // connection error... back to main?
@@ -118,4 +126,64 @@ onUnmounted(() => {
   console.log("unmounted");
   TheGameRunner.stop();
 });
+
+// Manually tinker up a game based on some particular state I'm trying to debug
+const debugGameState = (TheGameRunner: GameRunner) => {
+  TheGameRunner.gameBoard = [
+    [
+      new Piece("black", "king", { r: 0, c: 0 }, null, true, true),
+      new Piece("black", "pawn", { r: 0, c: 1 }, null, true, true),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+    [
+      new Piece("black", "queen", { r: 1, c: 0 }, null, true, true),
+      null,
+      new Piece("black", "pawn", { r: 1, c: 2 }, null, true, true),
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+    [
+      new Piece("black", "pawn", { r: 2, c: 0 }, null, true, true),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [
+      new Piece("white", "queen", { r: 6, c: 0 }, null, true, true),
+      new Piece("white", "pawn", { r: 6, c: 1 }, null, true, true),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+    [
+      new Piece("white", "king", { r: 7, c: 0 }, null, true, true),
+      new Piece("white", "pawn", { r: 7, c: 1 }, null, true, true),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+  ];
+  TheGameRunner.gameMode = "move";
+};
 </script>
