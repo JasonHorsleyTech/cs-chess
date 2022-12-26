@@ -172,52 +172,126 @@ export default class GameRunner {
   }): Piece {
     const { piece, moveTo, player } = payload;
 
+    console.log("here");
+    /** Handy variables **/
+    const moveFrom = piece.location;
+    const distanceHorizontal = Math.abs(moveFrom.c - moveTo.c);
+    const distanceVertical = Math.abs(moveFrom.r - moveTo.r);
+    Math.abs(distanceVertical) === Math.abs(distanceHorizontal);
+    const rInc = moveFrom.r === moveTo.r ? 0 : moveFrom.r < moveTo.r ? 1 : -1;
+    const cInc = moveFrom.c === moveTo.c ? 0 : moveFrom.c < moveTo.c ? 1 : -1;
+
+    /** Global bad move checks **/
     if (this.gameMode !== "move") {
-      throw "Cannot move piece when not in move mode";
+      throw "Can't move piece when not in move mode";
     }
 
     if (moveTo.r < 0 || moveTo.r > 7 || moveTo.c < 0 || moveTo.c > 7) {
       throw "Can't move off board";
     }
 
-    // Can't take your own piece
     if (this.gameBoard[moveTo.r][moveTo.c]?.player === player) {
-        throw "Can't take your own piece"
+      throw "Can't take your own piece";
     }
 
-    const moveFrom = piece.location;
-    const distanceHorizontal = Math.abs(moveFrom.c - moveTo.c);
-    const distanceVertical = Math.abs(moveFrom.r - moveTo.r);
-    const validDiagonal =
-      Math.abs(distanceVertical) === Math.abs(distanceHorizontal);
-    const validStraight = moveFrom.r === moveTo.r || moveFrom.c === moveTo.c;
+    if (piece.location.r === moveTo.r && piece.location.c === moveTo.c) {
+      throw "Can't move to same space";
+    }
+
+    // if (piece.type !== "knight") {
+    //   for (let i = 1; i < Math.max(distanceHorizontal, distanceVertical); i++) {
+    //     if (this.gameBoard[moveFrom.r + i * rInc][moveFrom.c + i * cInc]) {
+    //       throw "Can't jump over other pieces";
+    //     }
+    //   }
+    // }
+
+    /** Piece specific move checks **/
     switch (piece.type) {
       case "pawn":
-        // if (moveFrom.r)
+        const pieceAtDestination = this.gameBoard[moveTo.r][moveTo.c];
+
+        if (
+          (moveFrom.r - moveTo.r > 0 && player === "black") ||
+          (moveFrom.r - moveTo.r < 0 && player === "white")
+        ) {
+          throw "Not a valid pawn move: Can't move backwards";
+        }
+
+        // 1 space forwards
+        if (
+          distanceHorizontal === 0 &&
+          distanceVertical === 1 &&
+          pieceAtDestination === null
+        ) {
+          break;
+        }
+
+        // 2 spaces forwads
+        if (
+          distanceHorizontal === 0 &&
+          distanceVertical === 2 &&
+          // And we haven't jumped over another piece (checked in globals)
+          pieceAtDestination === null &&
+          piece.firstMove
+        ) {
+          break;
+        }
+
+        // Diagonal capture
+        if (
+          distanceHorizontal === 1 &&
+          distanceVertical === 1 &&
+          pieceAtDestination !== null &&
+          pieceAtDestination.player !== player
+        ) {
+          break;
+        }
+
+        throw "Not a valid pawn move: Can only move 1/2 space forwards or 1 space diagonally if capturing";
       case "knight":
         if (
           (distanceHorizontal === 2 && distanceVertical === 1) ||
           (distanceHorizontal === 1 && distanceVertical === 2)
         ) {
-            break;
-        } else {
-            throw "Not a valid knight move";
+          break;
         }
+
+        throw "Not a valid knight move";
       case "bishop":
-        if (!validDiagonal) throw "Not a valid bishop move";
+        if (distanceHorizontal !== distanceVertical) {
+          throw "Bishops can only move diagonally";
+        }
       case "rook":
-        if (!validStraight) throw "Not a valid rook move";
-      case "queen":
-        if (!validDiagonal && !validStraight) throw "Not a valid queen move";
-      case "king":
         if (
-          Math.abs(moveFrom.r - moveTo.r) > 1 ||
-          Math.abs(moveFrom.c - moveTo.c) > 1
-        )
-          throw "Not a valid king move";
+          distanceHorizontal !== 0 &&
+          distanceVertical !== 0
+          // And we *are* moving (checked in globals)
+        ) {
+          throw "Rooks can only move horizontally or vertically";
+        }
+
+        break;
+      case "queen":
+        if (distanceHorizontal === distanceVertical) {
+          // Diagonal
+          break;
+        } else if (distanceHorizontal === 0 || distanceVertical === 0) {
+          // Horizontal or vertical
+          break;
+        }
+
+        throw "Queens can only move horizontally, vertically, or diagonally";
+      case "king":
+        if (distanceHorizontal > 1 || distanceVertical > 1) {
+          throw "Kings can only move 1 space";
+        }
+
+        break;
     }
 
     piece.moveTo = moveTo;
+    piece.firstMove = false;
     return piece;
   }
 }

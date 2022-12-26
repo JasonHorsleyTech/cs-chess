@@ -37,7 +37,7 @@
       >
         <div v-for="(pieceOnBoard, c) in row" class="grid">
           <div
-            class="group w-8 h-8 border grid place-content-stretch"
+            class="group relative w-8 h-8 grid place-content-stretch"
             :class="[
               // Checkerboard pattern
               (c + r) % 2 ? 'bg-gray-300/50' : 'bg-gray-50/50',
@@ -51,12 +51,23 @@
               v-else-if="pieceOnBoard.player === TheGameRunner.player"
               :pieceType="pieceOnBoard.type"
               :player="pieceOnBoard.player"
-              :class="[pieceSelected === pieceOnBoard ? 'animate-wiggle' : '']"
+              :class="[
+                pieceSelected === pieceOnBoard
+                  ? 'animate-wiggle bg-black/25'
+                  : '',
+              ]"
             />
             <GamePiece
               v-else
               :pieceType="pieceOnBoard.type"
               :player="pieceOnBoard.player"
+            />
+
+            <GameMovementArrow
+              v-if="pieceOnBoard !== null && pieceOnBoard.moveTo !== null"
+              :player="pieceOnBoard.player"
+              :moveFrom="pieceOnBoard.location"
+              :moveTo="pieceOnBoard.moveTo"
             />
           </div>
         </div>
@@ -86,11 +97,18 @@ const handleBoardClick = (loc: BoardLocation) => {
       return;
     }
   } else {
-    props.TheGameRunner.movePiece({
-      piece: pieceSelected.value,
-      moveTo: loc,
-      player: props.TheGameRunner.player,
-    });
+    try {
+      props.TheGameRunner.movePiece({
+        piece: pieceSelected.value,
+        moveTo: loc,
+        player: props.TheGameRunner.player,
+      });
+
+      // It's gonna move now
+    } catch (error) {
+      console.error(error);
+    }
+    pieceSelected.value = null;
   }
 };
 </script>

@@ -17,6 +17,8 @@ export default class Piece {
     public purchaseVerified: boolean = false,
 
     // Was the purchase/placement locked in (done during previous turn)?
-    public purchaseLocked: boolean = false
+    public purchaseLocked: boolean = false,
+
+    public firstMove: boolean = true
   ) {}
 }
