@@ -2,7 +2,6 @@
   <div class="grid gap-4">
     <div class="grid">
       <h2 class="">Purchase and place pieces.</h2>
-      <h2>{{ pieceSelected }}</h2>
     </div>
 
     <div class="flex justify-between items-center">
@@ -43,7 +42,11 @@
               (c + r) % 2 ? 'bg-gray-300/50' : 'bg-gray-50/50',
               'hover:bg-gray-400 cursor-pointer',
               pieceSelected !== null ? 'hover:bg-blue-200' : '',
-              pieceOnBoard?.stunned ? 'pointer-events-none' : 'pointer-events-auto'
+              pieceOnBoard?.stunned ||
+              (TheGameRunner.measure == 2 && TheGameRunner.beat >= 6) ||
+              TheGameRunner.measure >= 3
+                ? 'pointer-events-none opacity-50'
+                : 'pointer-events-auto',
             ]"
             @click="handleBoardClick({ r, c })"
           >
@@ -67,7 +70,11 @@
             />
 
             <GameMovementArrow
-              v-if="pieceOnBoard !== null && pieceOnBoard.moveTo !== null && pieceOnBoard.player === TheGameRunner.player"
+              v-if="
+                pieceOnBoard !== null &&
+                pieceOnBoard.moveTo !== null &&
+                pieceOnBoard.player === TheGameRunner.player
+              "
               :player="pieceOnBoard.player"
               :moveFrom="pieceOnBoard.location"
               :moveTo="pieceOnBoard.moveTo"

@@ -162,6 +162,84 @@ const fixedStateQueenColission = [
   ],
 ];
 
+const fixedStateAudTest = [
+  [
+    new Piece("white", "queen", { r: 0, c: 0 }, { r: 0, c: 7 }),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    new Piece("black", "queen", { r: 7, c: 7 }, { r: 0, c: 7 }),
+  ],
+];
+
+const testState = () => {
+  return [
+    [
+      new Piece("black", "rook", { r: 0, c: 0 }, null),
+      new Piece("black", "knight", { r: 0, c: 1 }, null),
+      new Piece("black", "bishop", { r: 0, c: 2 }, null),
+      new Piece("black", "queen", { r: 0, c: 3 }, null),
+      new Piece("black", "king", { r: 0, c: 4 }, null),
+      new Piece("black", "bishop", { r: 0, c: 5 }, null),
+      new Piece("black", "knight", { r: 0, c: 6 }, null),
+      new Piece("black", "rook", { r: 0, c: 7 }, null),
+    ],
+    [
+      new Piece("black", "pawn", { r: 1, c: 0 }, null),
+      new Piece("black", "pawn", { r: 1, c: 1 }, null),
+      new Piece("black", "pawn", { r: 1, c: 2 }, null),
+      new Piece("black", "pawn", { r: 1, c: 3 }, null),
+      new Piece("black", "pawn", { r: 1, c: 4 }, null),
+      new Piece("black", "pawn", { r: 1, c: 5 }, null),
+      new Piece("black", "pawn", { r: 1, c: 6 }, null),
+      new Piece("black", "pawn", { r: 1, c: 7 }, null),
+    ],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [
+      new Piece("white", "pawn", { r: 6, c: 0 }, null),
+      new Piece("white", "pawn", { r: 6, c: 1 }, null),
+      new Piece("white", "pawn", { r: 6, c: 2 }, null),
+      new Piece("white", "pawn", { r: 6, c: 3 }, null),
+      new Piece("white", "pawn", { r: 6, c: 4 }, null),
+      new Piece("white", "pawn", { r: 6, c: 5 }, null),
+      new Piece("white", "pawn", { r: 6, c: 6 }, null),
+      new Piece("white", "pawn", { r: 6, c: 7 }, null),
+    ],
+    [
+      new Piece("white", "rook", { r: 7, c: 0 }, null),
+      new Piece("white", "knight", { r: 7, c: 1 }, null),
+      new Piece("white", "bishop", { r: 7, c: 2 }, null),
+      new Piece("white", "queen", { r: 7, c: 3 }, null),
+      new Piece("white", "king", { r: 7, c: 4 }, null),
+      new Piece("white", "bishop", { r: 7, c: 5 }, null),
+      new Piece("white", "knight", { r: 7, c: 6 }, null),
+      new Piece("white", "rook", { r: 7, c: 7 }, null),
+    ],
+  ];
+};
+
 const props = defineProps<{
   TheGameConnector: GameConnector;
   role: "host" | "client";
@@ -245,7 +323,9 @@ const beat = computed(() => {
 });
 
 watch(beat, ([beat, measure]) => {
-
+  //   if (measure === 0 && beat === 1) {
+  //     TheGameRunner.gameBoard = testState();
+  //   }
 });
 
 onMounted(async () => {
@@ -269,9 +349,7 @@ onUnmounted(() => {
 
 // Manually tinker up a game based on some particular state I'm trying to debug
 const debugGameState = (TheGameRunner: GameRunner) => {
-  TheGameRunner.gameBoard = fixedStateMultiQueen;
+  TheGameRunner.gameBoard = testState();
   TheGameRunner.gameMode = "move";
-//   TheGameRunner.beat = 11;
-//   TheGameRunner.measure = 2;
 };
 </script>

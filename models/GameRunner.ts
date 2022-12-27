@@ -1,4 +1,88 @@
 import Piece from "./Piece";
+import Wad from "web-audio-daw";
+const saw = new Wad({
+  source: "sawtooth",
+  panning: [0, 1, 10],
+  panningModel: "HRTF",
+  rolloffFactor: "1",
+});
+// saw.play();
+var sine = new Wad({ source: "sine" });
+var square = new Wad({ source: "square" });
+var triangle = new Wad({ source: "triangle" });
+
+var tripleOscillator = new Wad.Poly({});
+
+tripleOscillator.add(sine);
+// tripleOscillator.add(square)
+tripleOscillator.add(triangle);
+tripleOscillator.add(saw);
+
+const knock = (count: number) => {
+  new Wad({
+    source: "noise",
+    env: {
+      attack: 0.01,
+      decay: 0.01,
+      sustain: 0.1,
+      hold: 0.05,
+      release: 0.05,
+    },
+    filter: { type: "lowpass", frequency: 1000, q: 1 },
+    volume: 1,
+  }).play();
+  const toneToPitch = {
+    0: "C3",
+    1: "C#3",
+    2: "D3",
+    3: "D#3",
+    4: "E3",
+    5: "F3",
+    6: "F#3",
+    7: "G3",
+    8: "G#3",
+    9: "A3",
+    10: "A#3",
+    11: "B3",
+    12: "C4",
+  };
+  tripleOscillator.play({
+    // @ts-ignore
+    pitch: toneToPitch[count] ?? "C4",
+    env: { attack: 0.1, decay: 0.1, sustain: 0.1, hold: 0.1, release: 0.1 },
+    volume: 0.1,
+  });
+};
+
+const crash = (count: number) => {
+  new Wad({
+    source: "noise",
+    env: {
+      attack: 0.01,
+      decay: 0.01,
+      sustain: 0.1,
+      hold: 0.1,
+      release: 0.1,
+    },
+    filter: { type: "highpass", frequency: 1000, q: 1 },
+    volume: count,
+  }).play();
+};
+
+// const clack = () => {
+//     new Wad({
+//         source: "noise",
+//         env: {
+//             attack: 0.01,
+//             decay: 0.01,
+//             sustain: 0.1,
+//             hold: 0.05,
+//             release: 0.05
+//         },
+//         filter: { type: "lowpass", frequency: 1000, q: 1 },
+//         volume: 1
+//     }).play()
+// }
 
 const newBoard = () => {
   return [
@@ -128,25 +212,40 @@ export default class GameRunner {
       //               Pieces with moveTos get movementPathing cleared
       //               ^                   stay at their last set .location
 
+      let collisionCount = 0;
+      let movementCount = 0;
       tempBoard.map((row, rIndex) => {
         row.map((pieces, cIndex) => {
           if (pieces === null) {
             return;
           }
 
-          if (pieces.length === 1) {
-            const piece = pieces[0];
-            this.gameBoard[piece.location.r][piece.location.c] = null;
-            this.gameBoard[rIndex][cIndex] = piece;
-            piece.location = { r: rIndex, c: cIndex };
-          } else {
+          if (pieces.length > 1) {
             pieces.map((piece) => {
               piece.movementPathing = [];
               piece.stunned = true;
             });
+
+            collisionCount++;
+          } else {
+            const piece = pieces[0];
+            if (piece.location.r !== rIndex || piece.location.c !== cIndex) {
+              this.gameBoard[piece.location.r][piece.location.c] = null;
+              this.gameBoard[rIndex][cIndex] = piece;
+              piece.location = { r: rIndex, c: cIndex };
+
+              movementCount++;
+            }
           }
         });
       });
+
+      if (movementCount > 0) {
+        knock(movementCount);
+      }
+      if (collisionCount > 0) {
+        crash(collisionCount);
+      }
     }
 
     // No new purchased at start of new 4 bars means we tick into move mode
