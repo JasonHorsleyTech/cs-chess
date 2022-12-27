@@ -4,8 +4,14 @@
     :style="[
       `height: ${(Math.abs(moveFrom.r - moveTo.r) + 1) * 100}%`,
       `width: ${(Math.abs(moveFrom.c - moveTo.c) + 1) * 100}%`,
-      `top: ${(moveFrom.r > moveTo.r ? moveTo.r - moveFrom.r : 0) * 100}%`,
-      `left: ${(moveFrom.c > moveTo.c ? moveTo.c - moveFrom.c : 0) * 100}%`,
+      player === 'white'
+        ? `top: ${(moveFrom.r > moveTo.r ? moveTo.r - moveFrom.r : 0) * 100}%`
+        : `top: ${(moveFrom.r < moveTo.r ? moveTo.r - moveFrom.r : 0) * -100}%`,
+      player === 'white'
+        ? `left: ${(moveFrom.c > moveTo.c ? moveTo.c - moveFrom.c : 0) * 100}%`
+        : `left: ${
+            (moveFrom.c < moveTo.c ? moveTo.c - moveFrom.c : 0) * -100
+          }%`,
     ]"
   >
     <div

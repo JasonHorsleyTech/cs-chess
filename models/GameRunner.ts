@@ -67,21 +67,33 @@ export default class GameRunner {
     }
 
     if (this.beat === 0 && this.measure === 0) {
-      let piecesLocked = 0;
+      if (this.gameMode === "purchase") {
+        let piecesLocked = 0;
 
-      this.gameBoard.map((row) => {
-        row.map((piece) => {
-          if (piece === null) return;
+        this.gameBoard.map((row) => {
+          row.map((piece) => {
+            if (piece === null) return;
 
-          if (piece.purchaseLocked === false) {
-            piece.purchaseLocked = true;
-            piecesLocked++;
-          }
+            if (piece.purchaseLocked === false) {
+              piece.purchaseLocked = true;
+              piecesLocked++;
+            }
+          });
         });
-      });
 
-      if (piecesLocked === 0) {
-        this.gameMode = "move";
+        if (piecesLocked === 0) {
+          this.gameMode = "move";
+        }
+      } else if (this.gameMode === "move") {
+        // this.gameBoard.map((row) => {
+        //   row.map((piece) => {
+        //     if (piece === null || piece.moveTo === null) return;
+        //     this.gameBoard[piece.location.r][piece.location.c] = null;
+        //     piece.location = piece.moveTo;
+        //     piece.moveTo = null;
+        //     this.gameBoard[piece.location.r][piece.location.c] = piece;
+        //   });
+        // });
       }
     }
   }

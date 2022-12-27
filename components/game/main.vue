@@ -108,6 +108,13 @@ props.TheGameConnector.callbacks["purchase-and-place"] = {
   reject: () => {},
 };
 
+const beat = computed(() => {
+    return [TheGameRunner.beat, TheGameRunner.measure];
+})
+watch(beat, (beat, measure) => {
+    console.log(beat, measure);
+})
+
 onMounted(async () => {
   try {
     const startTime = await props.TheGameConnector.syncStart(
@@ -131,8 +138,18 @@ onUnmounted(() => {
 const debugGameState = (TheGameRunner: GameRunner) => {
   TheGameRunner.gameBoard = [
     [
-      new Piece("black", "king", { r: 0, c: 0 }, null, true, true),
-      new Piece("black", "pawn", { r: 0, c: 1 }, null, true, true),
+      new Piece("black", "queen", { r: 0, c: 0 }, {r: 7, c: 7}),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      new Piece("white", "queen", { r: 0, c: 7 }, {r: 7, c: 0}),
+    ],
+    [
+      null,
+      null,
       null,
       null,
       null,
@@ -141,17 +158,7 @@ const debugGameState = (TheGameRunner: GameRunner) => {
       null,
     ],
     [
-      new Piece("black", "queen", { r: 1, c: 0 }, null, true, true),
       null,
-      new Piece("black", "pawn", { r: 1, c: 2 }, null, true, true),
-      null,
-      null,
-      null,
-      null,
-      null,
-    ],
-    [
-      new Piece("black", "pawn", { r: 2, c: 0 }, null, true, true),
       null,
       null,
       null,
@@ -161,20 +168,9 @@ const debugGameState = (TheGameRunner: GameRunner) => {
       null,
     ],
     [null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null],
     [
       null,
       null,
-      null,
-      null,
-      null,
-      new Piece("white", "queen", { r: 5, c: 5 }, null, true, true),
-      null,
-      null,
-    ],
-    [
-      null,
-      new Piece("white", "pawn", { r: 6, c: 1 }, null, true, true),
       null,
       null,
       null,
@@ -183,8 +179,28 @@ const debugGameState = (TheGameRunner: GameRunner) => {
       null,
     ],
     [
-      new Piece("white", "king", { r: 7, c: 0 }, null, true, true),
-      new Piece("white", "pawn", { r: 7, c: 1 }, null, true, true),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+    [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+    [
+      null,
+      null,
       null,
       null,
       null,

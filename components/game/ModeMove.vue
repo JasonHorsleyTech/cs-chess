@@ -64,7 +64,7 @@
             />
 
             <GameMovementArrow
-              v-if="pieceOnBoard !== null && pieceOnBoard.moveTo !== null"
+              v-if="pieceOnBoard !== null && pieceOnBoard.moveTo !== null && pieceOnBoard.player === TheGameRunner.player"
               :player="pieceOnBoard.player"
               :moveFrom="pieceOnBoard.location"
               :moveTo="pieceOnBoard.moveTo"
