@@ -43,6 +43,7 @@
               (c + r) % 2 ? 'bg-gray-300/50' : 'bg-gray-50/50',
               'hover:bg-gray-400 cursor-pointer',
               pieceSelected !== null ? 'hover:bg-blue-200' : '',
+              pieceOnBoard?.stunned ? 'pointer-events-none' : 'pointer-events-auto'
             ]"
             @click="handleBoardClick({ r, c })"
           >
@@ -51,6 +52,7 @@
               v-else-if="pieceOnBoard.player === TheGameRunner.player"
               :pieceType="pieceOnBoard.type"
               :player="pieceOnBoard.player"
+              :stunned="pieceOnBoard.stunned"
               :class="[
                 pieceSelected === pieceOnBoard
                   ? 'animate-wiggle bg-black/25'
@@ -61,6 +63,7 @@
               v-else
               :pieceType="pieceOnBoard.type"
               :player="pieceOnBoard.player"
+              :stunned="pieceOnBoard.stunned"
             />
 
             <GameMovementArrow

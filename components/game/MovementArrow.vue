@@ -54,8 +54,4 @@ const arrowStyle = computed(() => {
     width: width === 0 ? "auto" : width,
   };
 });
-
-onMounted(() => {
-  console.log(props);
-});
 </script>

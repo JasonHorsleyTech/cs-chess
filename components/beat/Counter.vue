@@ -7,7 +7,7 @@
     >
       <BeatCounterLight
         v-if="measure + 1 >= i"
-        :at="measure === i - 1 ? beat : 3"
+        :at="measure === i - 1 ? Math.floor(beat/3) : 3"
         :color="measure === i - 1 ? 'red' : 'green'"
       />
     </div>
@@ -16,6 +16,6 @@
 <script lang="ts" setup>
 const props = defineProps<{
   measure: 0 | 1 | 2 | 3;
-  beat: 0 | 1 | 2 | 3;
+  beat: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 }>();
 </script>

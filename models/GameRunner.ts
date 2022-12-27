@@ -1,11 +1,24 @@
 import Piece from "./Piece";
 
+const newBoard = () => {
+  return [
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+  ];
+};
+
 export default class GameRunner {
   static size: number = 8;
 
   /** Internal game clock */
   measure: 0 | 1 | 2 | 3 = 0;
-  beat: 0 | 1 | 2 | 3 = 0;
+  beat: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 = 0;
   clock: NodeJS.Timer | number | null = null;
 
   player: "black" | "white";
@@ -19,23 +32,14 @@ export default class GameRunner {
     this.player = setupOptions.player;
 
     this.gameMode = "purchase";
-    this.gameBoard = [
-      [null, null, null, null, null, null, null, null],
-      [null, null, null, null, null, null, null, null],
-      [null, null, null, null, null, null, null, null],
-      [null, null, null, null, null, null, null, null],
-      [null, null, null, null, null, null, null, null],
-      [null, null, null, null, null, null, null, null],
-      [null, null, null, null, null, null, null, null],
-      [null, null, null, null, null, null, null, null],
-    ];
+    this.gameBoard = newBoard();
   }
 
   // Start the game
   start() {
     this.clock = setInterval(() => {
       this.tick();
-    }, 250);
+    }, 125);
   }
   stop() {
     if (typeof this.clock === "number") clearInterval(this.clock);
@@ -47,7 +51,7 @@ export default class GameRunner {
   tick() {
     this.beat++;
 
-    if (this.beat >= 4) {
+    if (this.beat >= 12) {
       this.beat = 0;
       this.measure++;
     }
@@ -57,44 +61,122 @@ export default class GameRunner {
     }
 
     /** Here:  --|    |    |  X |    |-- **/
-    if (this.measure === 2 && this.beat === 2) {
+    if (this.measure === 2 && this.beat === 9) {
       // Initiate data sync
     }
 
     /** Here:  --|    |    |   X|    |-- **/
-    if (this.beat === 2 && this.measure === 3) {
+    if (this.measure === 2 && this.beat === 11) {
       // If sync hasn't resolved, fail the game
     }
 
-    if (this.beat === 0 && this.measure === 0) {
-      if (this.gameMode === "purchase") {
-        let piecesLocked = 0;
+    if (this.measure === 3 && this.beat === 0) {
+      this.setupPieceMovementPathing();
+      this.unstunForNextRound();
+    }
 
-        this.gameBoard.map((row) => {
-          row.map((piece) => {
-            if (piece === null) return;
+    if (
+      (this.gameMode === "move" && this.measure === 3) ||
+      (this.measure === 0 && this.beat === 0)
+    ) {
+      // Need to loop one final time at measure0 beat0, running same collision logic
+      const beat = this.measure === 0 && this.beat === 0 ? 12 : this.beat;
 
-            if (piece.purchaseLocked === false) {
-              piece.purchaseLocked = true;
-              piecesLocked++;
-            }
-          });
+      const tempBoard: Array<Array<null | Array<Piece>>> = newBoard();
+
+      this.gameBoard.map((row) => {
+        row.map((piece) => {
+          if (piece === null || piece.moveTo === null) {
+            return;
+          }
+
+          let transit = piece.movementPathing.find((path) => {
+            return path.beat <= beat;
+          }) ?? { location: { r: piece.location.r, c: piece.location.c } };
+
+          const { r, c } = transit.location;
+
+          if (tempBoard[r][c] === null) {
+            tempBoard[r][c] = [];
+          }
+          // @ts-ignore
+          tempBoard[r][c].push(piece);
         });
+      });
 
-        if (piecesLocked === 0) {
-          this.gameMode = "move";
-        }
-      } else if (this.gameMode === "move") {
-        // this.gameBoard.map((row) => {
-        //   row.map((piece) => {
-        //     if (piece === null || piece.moveTo === null) return;
-        //     this.gameBoard[piece.location.r][piece.location.c] = null;
-        //     piece.location = piece.moveTo;
-        //     piece.moveTo = null;
-        //     this.gameBoard[piece.location.r][piece.location.c] = piece;
-        //   });
-        // });
+      // tempBoard is now
+      /*
+       * [
+       *  [ null, [piece, piece], null], <-- Two pieces collided.
+       *  [ null,      null,      null],
+       *  [ null,     [piece],    null], <-- No collision, he can stay
+       * ]
+       *
+       * "loc" will be prev coordinate
+       */
+
+      // TODO: A piece collision where no two pieces are actually on the same square at the same beat --
+      /**
+       * {type: 'queen', loc: {r: 0, c: 0}, moveTo: {r: 0, c: 2}}
+       * {type: 'queen', loc: {r: 0, c: 3}, moveTo: {r: 0, c: 1}}
+       *
+       * They're at r0c1 and r0c2 beat 0, then r0c2 and r0c1 beat 12.
+       * They "swap" places during the same beat
+       */
+
+      // On collision: Pieces without a moveTo are taken
+      //               Pieces with moveTos get movementPathing cleared
+      //               ^                   stay at their last set .location
+
+      tempBoard.map((row, rIndex) => {
+        row.map((pieces, cIndex) => {
+          if (pieces === null) {
+            return;
+          }
+
+          if (pieces.length === 1) {
+            const piece = pieces[0];
+            this.gameBoard[piece.location.r][piece.location.c] = null;
+            this.gameBoard[rIndex][cIndex] = piece;
+            piece.location = { r: rIndex, c: cIndex };
+          } else {
+            pieces.map((piece) => {
+              piece.movementPathing = [];
+              piece.stunned = true;
+            });
+          }
+        });
+      });
+    }
+
+    // No new purchased at start of new 4 bars means we tick into move mode
+    if (this.gameMode === "purchase" && this.measure === 0 && this.beat === 0) {
+      let piecesLocked = 0;
+
+      this.gameBoard.map((row) => {
+        row.map((piece) => {
+          if (piece === null) return;
+
+          if (piece.purchaseLocked === false) {
+            piece.purchaseLocked = true;
+            piecesLocked++;
+          }
+        });
+      });
+
+      if (piecesLocked === 0) {
+        this.gameMode = "move";
       }
+    }
+
+    if (this.gameMode === "move" && this.measure === 0 && this.beat === 0) {
+      this.gameBoard.map((row) => {
+        row.map((piece) => {
+          if (piece === null) return;
+          piece.movementPathing = [];
+          piece.moveTo = null;
+        });
+      });
     }
   }
 
@@ -184,7 +266,6 @@ export default class GameRunner {
   }): Piece {
     const { piece, moveTo, player } = payload;
 
-    console.log("here");
     /** Handy variables **/
     const moveFrom = piece.location;
     const distanceHorizontal = Math.abs(moveFrom.c - moveTo.c);
@@ -192,6 +273,11 @@ export default class GameRunner {
     Math.abs(distanceVertical) === Math.abs(distanceHorizontal);
     const rInc = moveFrom.r === moveTo.r ? 0 : moveFrom.r < moveTo.r ? 1 : -1;
     const cInc = moveFrom.c === moveTo.c ? 0 : moveFrom.c < moveTo.c ? 1 : -1;
+
+    /** CS-chess specific ruleset **/
+    if (piece.stunned) {
+      throw "Can't move stunned piece, try again next turn";
+    }
 
     /** Global bad move checks **/
     if (this.gameMode !== "move") {
@@ -305,5 +391,68 @@ export default class GameRunner {
     piece.moveTo = moveTo;
     piece.firstMove = false;
     return piece;
+  }
+
+  setupPieceMovementPathing(): void {
+    // const tempBoard = newBoard();
+    this.gameBoard.map((row) => {
+      row.map((piece) => {
+        if (piece === null || piece.moveTo === null) return;
+        const distance = Math.max(
+          Math.abs(piece.location.r - piece.moveTo.r),
+          Math.abs(piece.location.c - piece.moveTo.c)
+        );
+
+        for (let i = 1; i < distance; i++) {
+          const r =
+            piece.location.r +
+            (i * (piece.moveTo.r - piece.location.r)) / distance;
+          const c =
+            piece.location.c +
+            (i * (piece.moveTo.c - piece.location.c)) / distance;
+
+          const interval = 12 / (distance - 1);
+          let beat = Math.floor((i - 1) * interval);
+
+          /* D6 exception explained */
+
+          // d1:                                      (12)
+          // d2: 0,                                   (12)
+          // d3: 0,                6,                 (12)
+          // d4: 0,          4,          8,           (12)
+          // d5: 0,       3,       6,       9,        (12)
+          // d6: 0,    2.4,  4.8,     7.2,  9.6,      (12) <-- Exception!
+          // d7: 0,    2,    4,    6,    8,    10,    (12)
+
+          // Can't have decimals, so Math.floor(beat)
+          // Works for all except 7.2.         [0  2  4   7  9  X] feels like a misplaced beat.
+          // We want triplet | double rythem   [0  2  4  6   9  X]
+          if (distance === 6 && i === 4) beat = 6;
+
+          piece.movementPathing.push({
+            location: { r, c },
+            beat,
+          });
+        }
+
+        // All movement ends on beat 12 at final location
+        piece.movementPathing.push({
+          location: { r: piece.moveTo.r, c: piece.moveTo.c },
+          beat: 12,
+        });
+
+        // Reverse the pathing so we can .find() easier
+        piece.movementPathing.reverse();
+      });
+    });
+  }
+
+  unstunForNextRound() {
+    this.gameBoard.map((row) => {
+      row.map((piece) => {
+        if (piece === null) return;
+        piece.stunned = false;
+      });
+    });
   }
 }

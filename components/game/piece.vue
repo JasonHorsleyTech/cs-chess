@@ -2,6 +2,7 @@
   <div
     :style="styleSrc"
     class="w-full self-center mx-auto bg-center bg-no-repeat bg-contain"
+    :class="{ 'opacity-50': stunned }"
   >
     &nbsp;
   </div>
@@ -10,6 +11,7 @@
 const props = defineProps<{
   pieceType: PieceTypes;
   player: "black" | "white";
+  stunned: boolean;
 }>();
 
 const styleSrc = computed(() => {

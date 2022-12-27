@@ -30,6 +30,138 @@ import GameConnector from "~~/models/GameConnector";
 import GameRunner from "~~/models/GameRunner";
 import Piece from "~~/models/Piece";
 
+const fixedStateSingleQueen = [
+  [
+    new Piece("white", "queen", { r: 0, c: 0 }, { r: 0, c: 7 }),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+];
+
+const fixedStateMultiQueen = [
+  [
+    new Piece("white", "queen", { r: 0, c: 0 }, null),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  [
+    new Piece("white", "queen", { r: 1, c: 0 }, { r: 1, c: 1 }),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  [
+    new Piece("white", "queen", { r: 2, c: 0 }, { r: 2, c: 2 }),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  [
+    new Piece("white", "queen", { r: 3, c: 0 }, { r: 3, c: 3 }),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  [
+    new Piece("white", "queen", { r: 4, c: 0 }, { r: 4, c: 4 }),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  [
+    new Piece("white", "queen", { r: 5, c: 0 }, { r: 5, c: 5 }),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  [
+    new Piece("white", "queen", { r: 6, c: 0 }, { r: 6, c: 6 }),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  [
+    new Piece("white", "queen", { r: 7, c: 0 }, { r: 7, c: 7 }),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+];
+
+const fixedStateQueenColission = [
+  [
+    new Piece("white", "queen", { r: 0, c: 0 }, { r: 0, c: 7 }),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null],
+  [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    new Piece("black", "queen", { r: 7, c: 7 }, { r: 0, c: 7 }),
+  ],
+];
+
 const props = defineProps<{
   TheGameConnector: GameConnector;
   role: "host" | "client";
@@ -109,11 +241,12 @@ props.TheGameConnector.callbacks["purchase-and-place"] = {
 };
 
 const beat = computed(() => {
-    return [TheGameRunner.beat, TheGameRunner.measure];
-})
-watch(beat, (beat, measure) => {
-    console.log(beat, measure);
-})
+  return [TheGameRunner.beat, TheGameRunner.measure];
+});
+
+watch(beat, ([beat, measure]) => {
+
+});
 
 onMounted(async () => {
   try {
@@ -136,79 +269,9 @@ onUnmounted(() => {
 
 // Manually tinker up a game based on some particular state I'm trying to debug
 const debugGameState = (TheGameRunner: GameRunner) => {
-  TheGameRunner.gameBoard = [
-    [
-      new Piece("black", "queen", { r: 0, c: 0 }, {r: 7, c: 7}),
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      new Piece("white", "queen", { r: 0, c: 7 }, {r: 7, c: 0}),
-    ],
-    [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ],
-    [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ],
-    [null, null, null, null, null, null, null, null],
-    [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ],
-    [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ],
-    [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ],
-    [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ],
-  ];
+  TheGameRunner.gameBoard = fixedStateMultiQueen;
   TheGameRunner.gameMode = "move";
+//   TheGameRunner.beat = 11;
+//   TheGameRunner.measure = 2;
 };
 </script>
