@@ -1,5 +1,6 @@
 import { compileScript } from "@vue/compiler-sfc";
 import type { DataConnection } from "peerjs";
+import Piece from "./Piece";
 
 const isDataConnectionEvent = (data: any): data is DataConnectionEvent => {
   return (
@@ -21,6 +22,7 @@ export default class GameConnector {
     ping: { resolve: null, reject: null },
     "sync-start": { resolve: null, reject: null },
     "purchase-and-place": { resolve: null, reject: null },
+    "queue-move": { resolve: null, reject: null },
   };
 
   constructor(dc: DataConnection) {
@@ -76,8 +78,8 @@ export default class GameConnector {
     try {
       const responseContent = resolve(content);
       setTimeout(() => {
-          this.respond(type, responseContent, "ok");
-      }, 300)
+        this.respond(type, responseContent, "ok");
+      }, 300);
     } catch (error) {
       console.error(error);
       if (reject !== null) reject();
@@ -201,7 +203,7 @@ export default class GameConnector {
   }
 
   purchaseAndPlace(payload: {
-    pieceType: PieceTypes;
+    type: PieceTypes;
     location: BoardLocation;
     player: "black" | "white";
   }) {
@@ -217,6 +219,17 @@ export default class GameConnector {
       //   };
       // shit
       //   this.send("purchase-and-place");
+    });
+  }
+
+  queueMove(payload: {
+    type: PieceTypes;
+    location: BoardLocation;
+    moveTo: BoardLocation;
+    player: "black" | "white";
+  }) {
+    return new Promise<void>((resolve, reject) => {
+      this.send("queue-move", payload);
     });
   }
 

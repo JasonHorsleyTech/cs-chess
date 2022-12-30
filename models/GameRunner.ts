@@ -1,5 +1,7 @@
 import Piece from "./Piece";
 import Wad from "web-audio-daw";
+import { isEqual } from "lodash";
+
 const saw = new Wad({
   source: "sawtooth",
   panning: [0, 1, 10],
@@ -165,87 +167,7 @@ export default class GameRunner {
     ) {
       // Need to loop one final time at measure0 beat0, running same collision logic
       const beat = this.measure === 0 && this.beat === 0 ? 12 : this.beat;
-
-      const tempBoard: Array<Array<null | Array<Piece>>> = newBoard();
-
-      this.gameBoard.map((row) => {
-        row.map((piece) => {
-          if (piece === null || piece.moveTo === null) {
-            return;
-          }
-
-          let transit = piece.movementPathing.find((path) => {
-            return path.beat <= beat;
-          }) ?? { location: { r: piece.location.r, c: piece.location.c } };
-
-          const { r, c } = transit.location;
-
-          if (tempBoard[r][c] === null) {
-            tempBoard[r][c] = [];
-          }
-          // @ts-ignore
-          tempBoard[r][c].push(piece);
-        });
-      });
-
-      // tempBoard is now
-      /*
-       * [
-       *  [ null, [piece, piece], null], <-- Two pieces collided.
-       *  [ null,      null,      null],
-       *  [ null,     [piece],    null], <-- No collision, he can stay
-       * ]
-       *
-       * "loc" will be prev coordinate
-       */
-
-      // TODO: A piece collision where no two pieces are actually on the same square at the same beat --
-      /**
-       * {type: 'queen', loc: {r: 0, c: 0}, moveTo: {r: 0, c: 2}}
-       * {type: 'queen', loc: {r: 0, c: 3}, moveTo: {r: 0, c: 1}}
-       *
-       * They're at r0c1 and r0c2 beat 0, then r0c2 and r0c1 beat 12.
-       * They "swap" places during the same beat
-       */
-
-      // On collision: Pieces without a moveTo are taken
-      //               Pieces with moveTos get movementPathing cleared
-      //               ^                   stay at their last set .location
-
-      let collisionCount = 0;
-      let movementCount = 0;
-      tempBoard.map((row, rIndex) => {
-        row.map((pieces, cIndex) => {
-          if (pieces === null) {
-            return;
-          }
-
-          if (pieces.length > 1) {
-            pieces.map((piece) => {
-              piece.movementPathing = [];
-              piece.stunned = true;
-            });
-
-            collisionCount++;
-          } else {
-            const piece = pieces[0];
-            if (piece.location.r !== rIndex || piece.location.c !== cIndex) {
-              this.gameBoard[piece.location.r][piece.location.c] = null;
-              this.gameBoard[rIndex][cIndex] = piece;
-              piece.location = { r: rIndex, c: cIndex };
-
-              movementCount++;
-            }
-          }
-        });
-      });
-
-      if (movementCount > 0) {
-        knock(movementCount);
-      }
-      if (collisionCount > 0) {
-        crash(collisionCount);
-      }
+      this.stepPieces(beat);
     }
 
     // No new purchased at start of new 4 bars means we tick into move mode
@@ -277,6 +199,36 @@ export default class GameRunner {
         });
       });
     }
+  }
+
+  /**
+   * Find piece at board location
+   *
+   * Throw if no piece found
+   * Additionally throw if piece does not match expected values
+   */
+  findPiece(
+    location: BoardLocation,
+    assertions?: { [key: string]: any }
+  ): Piece {
+    const piece = this.gameBoard[location.r][location.c];
+
+    if (piece === null) {
+      throw new Error("No piece found at location");
+    }
+
+    if (assertions) {
+      Object.keys(assertions).map((key) => {
+        if (!isEqual(piece[key as keyof Piece], assertions[key])) {
+            debugger
+          throw new Error(
+            `Piece at location does not match assertion ${key}=${assertions[key]}`
+          );
+        }
+      });
+    }
+
+    return piece;
   }
 
   /**
@@ -337,13 +289,13 @@ export default class GameRunner {
   }
 
   purchaseAndPlace(payload: {
-    pieceType: PieceTypes;
+    type: PieceTypes;
     location: BoardLocation;
     player: "black" | "white";
   }): Piece {
-    const { pieceType, location, player } = payload;
+    const { type, location, player } = payload;
 
-    const price = this.piecePrices[pieceType];
+    const price = this.piecePrices[type];
     if (this.gameMode !== "purchase")
       throw "Cannot purchase piece when not in purchase mode";
 
@@ -353,25 +305,26 @@ export default class GameRunner {
     if (price > this.cash[player]) throw "Cannot afford that piece";
 
     this.cash[player] -= price;
-    const piece = new Piece(player, pieceType, location, null, false);
+    const piece = new Piece(player, type, location, null, false);
     this.gameBoard[location.r][location.c] = piece;
     return piece;
   }
 
-  movePiece(payload: {
-    piece: Piece;
+  queueMove(payload: {
+    type: PieceTypes;
+    location: BoardLocation;
     moveTo: BoardLocation;
     player: "black" | "white";
   }): Piece {
-    const { piece, moveTo, player } = payload;
+    const { type, location, moveTo, player } = payload;
+    const piece = this.findPiece(location, { type, player });
 
     /** Handy variables **/
-    const moveFrom = piece.location;
-    const distanceHorizontal = Math.abs(moveFrom.c - moveTo.c);
-    const distanceVertical = Math.abs(moveFrom.r - moveTo.r);
+    const distanceHorizontal = Math.abs(location.c - moveTo.c);
+    const distanceVertical = Math.abs(location.r - moveTo.r);
     Math.abs(distanceVertical) === Math.abs(distanceHorizontal);
-    const rInc = moveFrom.r === moveTo.r ? 0 : moveFrom.r < moveTo.r ? 1 : -1;
-    const cInc = moveFrom.c === moveTo.c ? 0 : moveFrom.c < moveTo.c ? 1 : -1;
+    const rInc = location.r === moveTo.r ? 0 : location.r < moveTo.r ? 1 : -1;
+    const cInc = location.c === moveTo.c ? 0 : location.c < moveTo.c ? 1 : -1;
 
     /** CS-chess specific ruleset **/
     if (piece.stunned) {
@@ -397,7 +350,7 @@ export default class GameRunner {
 
     // if (piece.type !== "knight") {
     //   for (let i = 1; i < Math.max(distanceHorizontal, distanceVertical); i++) {
-    //     if (this.gameBoard[moveFrom.r + i * rInc][moveFrom.c + i * cInc]) {
+    //     if (this.gameBoard[location.r + i * rInc][location.c + i * cInc]) {
     //       throw "Can't jump over other pieces";
     //     }
     //   }
@@ -409,8 +362,8 @@ export default class GameRunner {
         const pieceAtDestination = this.gameBoard[moveTo.r][moveTo.c];
 
         if (
-          (moveFrom.r - moveTo.r > 0 && player === "black") ||
-          (moveFrom.r - moveTo.r < 0 && player === "white")
+          (location.r - moveTo.r > 0 && player === "black") ||
+          (location.r - moveTo.r < 0 && player === "white")
         ) {
           throw "Not a valid pawn move: Can't move backwards";
         }
@@ -490,6 +443,72 @@ export default class GameRunner {
     piece.moveTo = moveTo;
     piece.firstMove = false;
     return piece;
+  }
+
+  stepPieces(beat: number) {
+    const tempBoard: Array<Array<null | Array<Piece>>> = newBoard();
+
+    // Move pieces based on current "beat"
+    this.gameBoard.map((row) => {
+      row.map((piece) => {
+        if (piece === null || piece.moveTo === null) {
+          return;
+        }
+
+        let transit = piece.movementPathing.find((path) => {
+          return path.beat <= beat;
+        }) ?? { location: { r: piece.location.r, c: piece.location.c } };
+
+        const { r, c } = transit.location;
+
+        if (tempBoard[r][c] === null) {
+          tempBoard[r][c] = [];
+        }
+        // @ts-ignore
+        tempBoard[r][c].push(piece);
+      });
+    });
+
+    // If tempBoard has a square with more than 1 piece, stun them at their pre-collision locations.
+    let collisionCount = 0;
+    let movementCount = 0;
+    tempBoard.map((row, rIndex) => {
+      row.map((pieces, cIndex) => {
+        if (pieces === null) {
+          return;
+        }
+
+        if (pieces.length > 1) {
+          pieces.map((piece) => {
+            piece.movementPathing = [];
+            piece.stunned = true;
+          });
+
+          collisionCount++;
+        } else {
+          const piece = pieces[0];
+          if (piece.location.r !== rIndex || piece.location.c !== cIndex) {
+            this.gameBoard[piece.location.r][piece.location.c] = null;
+            this.gameBoard[rIndex][cIndex] = piece;
+            piece.location = { r: rIndex, c: cIndex };
+
+            movementCount++;
+          }
+        }
+      });
+    });
+
+    // TODO: Collision detection for two pieces swapping location with each other on the same beat.
+    //       ^ {type: 'queen', loc: {r: 0, c: 0}, moveTo: {r: 0, c: 2}}
+    //       ^ {type: 'queen', loc: {r: 0, c: 3}, moveTo: {r: 0, c: 1}}
+
+    // TODO: Sound effect handler to abstract [Data needed to render reactive sound] [the effect itself]
+    if (movementCount > 0) {
+      knock(movementCount);
+    }
+    if (collisionCount > 0) {
+      crash(collisionCount);
+    }
   }
 
   setupPieceMovementPathing(): void {

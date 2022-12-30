@@ -51,6 +51,7 @@
               v-if="pieceOnBoard !== null"
               :pieceType="pieceOnBoard.type"
               :player="pieceOnBoard.player"
+              :stunned="false"
               :class="[
                 pieceOnBoard?.purchaseLocked
                   ? 'opacity-100'
@@ -62,6 +63,7 @@
               v-else-if="toPurchase"
               :pieceType="toPurchase"
               :player="TheGameRunner.player"
+              :stunned="false"
             />
           </div>
         </div>
@@ -107,7 +109,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "purchaseAndPlace", pieceType: PieceTypes, location: BoardLocation): void;
+  (e: "purchaseAndPlace", type: PieceTypes, location: BoardLocation): void;
 }>();
 
 const toPurchase = ref<null | PieceTypes>(null);

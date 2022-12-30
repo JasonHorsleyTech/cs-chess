@@ -13,6 +13,9 @@ export default class Piece {
     public type: PieceTypes,
     public location: BoardLocation,
     public moveTo: null | BoardLocation,
+
+    // Has p1's "moveTo" been verified by p2?
+    public movementVerified: boolean = false,
     // Has the initial purchase/placement been made?
     public purchaseVerified: boolean = false,
     // Was the purchase/placement locked in (done during previous turn)?
@@ -27,6 +30,6 @@ export default class Piece {
     }> = [],
 
     // Can the piece move this round?
-    public stunned: boolean = false,
+    public stunned: boolean = false
   ) {}
 }

@@ -4,7 +4,7 @@ declare global {
   type ConfirmRejectCallbacks = [() => void, (rejectReason? = string) => void];
 
   interface DataConnectionEvent {
-    type: "ping" | "sync-start" | "purchase-and-place";
+    type: "ping" | "sync-start" | "purchase-and-place" | "queue-move";
     content: {
       stamp: number;
       [key: string]: any;
@@ -22,6 +22,10 @@ declare global {
       reject: null | (() => void);
     };
     "purchase-and-place": {
+      resolve: null | ((any) => DataConnectionEvent["content"]);
+      reject: null | (() => void);
+    };
+    "queue-move": {
       resolve: null | ((any) => DataConnectionEvent["content"]);
       reject: null | (() => void);
     };

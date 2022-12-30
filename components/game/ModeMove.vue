@@ -94,9 +94,18 @@ const props = defineProps<{
   TheGameRunner: GameRunner;
 }>();
 
+const emit = defineEmits<{
+  (
+    e: "queue-move",
+    type: PieceTypes,
+    location: BoardLocation,
+    moveTo: BoardLocation
+  ): void;
+}>();
+
 const pieceSelected = ref<null | Piece>(null);
-const handleBoardClick = (loc: BoardLocation) => {
-  const boardSquare = props.TheGameRunner.gameBoard[loc.r][loc.c];
+const handleBoardClick = (target: BoardLocation) => {
+  const boardSquare = props.TheGameRunner.gameBoard[target.r][target.c];
 
   if (pieceSelected.value === null) {
     if (
@@ -107,17 +116,13 @@ const handleBoardClick = (loc: BoardLocation) => {
       return;
     }
   } else {
-    try {
-      props.TheGameRunner.movePiece({
-        piece: pieceSelected.value,
-        moveTo: loc,
-        player: props.TheGameRunner.player,
-      });
+    emit(
+      "queue-move",
+      pieceSelected.value.type,
+      pieceSelected.value.location,
+      target
+    );
 
-      // It's gonna move now
-    } catch (error) {
-      console.error(error);
-    }
     pieceSelected.value = null;
   }
 };
