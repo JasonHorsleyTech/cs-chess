@@ -220,7 +220,6 @@ export default class GameRunner {
     if (assertions) {
       Object.keys(assertions).map((key) => {
         if (!isEqual(piece[key as keyof Piece], assertions[key])) {
-            debugger
           throw new Error(
             `Piece at location does not match assertion ${key}=${assertions[key]}`
           );
@@ -412,6 +411,8 @@ export default class GameRunner {
         if (distanceHorizontal !== distanceVertical) {
           throw "Bishops can only move diagonally";
         }
+
+        break;
       case "rook":
         if (
           distanceHorizontal !== 0 &&
