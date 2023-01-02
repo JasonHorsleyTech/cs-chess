@@ -77,9 +77,7 @@ export default class GameConnector {
 
     try {
       const responseContent = resolve(content);
-      setTimeout(() => {
-        this.respond(type, responseContent, "ok");
-      }, 300);
+      this.respond(type, responseContent, "ok");
     } catch (error) {
       console.error(error);
       if (reject !== null) reject();
