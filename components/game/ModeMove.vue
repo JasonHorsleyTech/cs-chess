@@ -1,7 +1,7 @@
 <template>
   <div class="grid gap-4">
     <div class="grid">
-      <h2 class="">Purchase and place pieces.</h2>
+      <h2 class="">Play chess!</h2>
     </div>
 
     <div class="flex justify-between items-center">
@@ -24,10 +24,7 @@
     <GameBoard
       :player="TheGameRunner.player"
       :board="TheGameRunner.gameBoard"
-      :disabled="
-        (TheGameRunner.measure == 2 && TheGameRunner.beat >= 6) ||
-        TheGameRunner.measure >= 3
-      "
+      :disabled="TheGameRunner.syncing"
       @clickSquare="handleBoardClick"
     >
       <template #piece="piece">

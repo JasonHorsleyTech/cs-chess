@@ -28,6 +28,7 @@
       :piece-type="pieceType"
       :player="player"
       :class="[selected ? 'animate-wiggle' : '']"
+      :stunned="false"
     ></Piece>
 
     <span

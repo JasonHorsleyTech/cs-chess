@@ -113,6 +113,7 @@ export default class GameRunner {
 
   // Normal chess starts with 43 in piece value
   cash: { black: number; white: number } = { black: 60, white: 60 };
+  wins: Array<"black" | "white" | null> = [null, null, null, null, null];
 
   constructor(setupOptions: { player: "black" | "white" }) {
     this.player = setupOptions.player;
@@ -174,23 +175,13 @@ export default class GameRunner {
     }
 
     // No new purchased at start of new 4 bars means we tick into move mode
-    if (this.gameMode === "purchase" && this.measure === 0 && this.beat === 0) {
-      let piecesLocked = 0;
-
-      this.gameBoard.map((row) => {
-        row.map((piece) => {
-          if (piece === null) return;
-
-          if (piece.purchaseLocked === false) {
-            piece.purchaseLocked = true;
-            piecesLocked++;
-          }
-        });
-      });
-
-      if (piecesLocked === 0) {
-        this.gameMode = "move";
-      }
+    if (
+      this.gameMode === "purchase" &&
+      this.measure === 0 &&
+      this.beat === 0 &&
+      this.purchasesPendingCount === 0
+    ) {
+      this.gameMode = "move";
     }
 
     if (this.gameMode === "move" && this.measure === 0 && this.beat === 0) {
@@ -301,6 +292,27 @@ export default class GameRunner {
     });
 
     return pieces;
+  }
+
+  get syncing(): boolean {
+    return (this.measure == 2 && this.beat >= 6) || this.measure >= 3;
+  }
+
+  get purchasesPendingCount(): number {
+    let piecesLocked = 0;
+
+    this.gameBoard.map((row) => {
+      row.map((piece) => {
+        if (piece === null) return;
+
+        if (piece.purchaseLocked === false) {
+          piece.purchaseLocked = true;
+          piecesLocked++;
+        }
+      });
+    });
+
+    return piecesLocked;
   }
 
   purchaseAndPlace(payload: {

@@ -1,84 +1,41 @@
 <template>
   <div class="grid gap-4">
-    <div class="grid">
-      <h2 class="">Purchase and place pieces.</h2>
-      <h2>Both players must skip a turn to start.</h2>
-    </div>
+    <GameMatchCounter :wins="TheGameRunner.wins" />
 
-    <div class="flex justify-between items-center">
-      <div
-        class="700 bg-white font-xl py-2 rounded-full font-bold text-xl px-4 border"
-      >
-        <BeatCounter
-          class=""
-          :beat="TheGameRunner.beat"
-          :measure="TheGameRunner.measure"
-        />
-      </div>
-      <p
-        class="text-green-700 bg-white font-xl py-1 rounded-full font-bold text-lg px-4 border"
-      >
-        ${{ TheGameRunner.cash[TheGameRunner.player] }}
-      </p>
-    </div>
+    <GameBeatAndCash :beat="TheGameRunner.beat" :measure="TheGameRunner.measure" :cash="TheGameRunner.cash[TheGameRunner.player]" />
 
-    <div
-      class="flex mx-auto border border-gray-400"
-      :class="[
-        TheGameRunner.player === 'black' ? 'flex-col-reverse' : 'flex-col',
-      ]"
+    <GameBoard
+      :player="TheGameRunner.player"
+      :board="TheGameRunner.gameBoard"
+      :disabled="TheGameRunner.syncing"
+      @clickSquare="handleBoardClick"
     >
-      <div
-        v-for="(row, r) in TheGameRunner.gameBoard"
-        class="flex border-gray-300"
-        :class="[
-          TheGameRunner.player === 'black' ? 'flex-row-reverse' : 'flex-row',
-        ]"
-      >
-        <div v-for="(pieceOnBoard, c) in row" class="grid">
-          <div
-            class="group w-8 h-8 border grid place-content-stretch"
-            :class="[
-              // Checkerboard pattern
-              (c + r) % 2 ? 'bg-gray-300/50' : 'bg-gray-50/50',
-              canPlace({ r, c })
-                ? 'hover:bg-gray-400 cursor-pointer'
-                : 'pointer-events-none',
-            ]"
-            @click="handleBoardClick({ r, c })"
-          >
-            <GamePiece
-              v-if="pieceOnBoard !== null"
-              :pieceType="pieceOnBoard.type"
-              :player="pieceOnBoard.player"
-              :stunned="false"
-              :class="[
-                pieceOnBoard?.purchaseLocked
-                  ? 'opacity-100'
-                  : 'opacity-50 group-hover:animate-wiggle group-hover:w-3/4',
-              ]"
-            />
-            <GamePiece
-              class="w-1/2 hidden group-hover:block"
-              v-else-if="toPurchase"
-              :pieceType="toPurchase"
-              :player="TheGameRunner.player"
-              :stunned="false"
-            />
-          </div>
+      <template #piece="piece">
+        <GamePiece
+          :pieceType="piece.type"
+          :player="piece.player"
+          :stunned="piece.stunned"
+          :class="[piece.purchaseLocked ? 'opacity-100' : 'opacity-50']"
+        />
+      </template>
+      <template #board>
+        <div
+          v-if="
+            TheGameRunner.purchasesPendingCount === 0 && TheGameRunner.syncing
+          "
+          class="text-2xl grid place-content-center h-full text-red-900 font-bold animate-pulse"
+        >
+          GET READY!
         </div>
-      </div>
-    </div>
+      </template>
+    </GameBoard>
 
     <div class="relative grid grid-cols-3 grid-rows-2 gap-4 place-content-end">
       <GameUIPurchasePiece
         v-for="pieceType in Piece.allTypes"
         :pieceType="pieceType"
         :player="player"
-        :disabled="
-          TheGameRunner.cash[TheGameRunner.player] <
-          TheGameRunner.piecePrices[pieceType]
-        "
+        :disabled="purchaseDisabled(pieceType)"
         :count="TheGameRunner.pieceCounts[pieceType]"
         :price="TheGameRunner.piecePrices[pieceType]"
         @click="toPurchase = pieceType"
@@ -99,6 +56,7 @@
     </div>
   </div>
 </template>
+
 <script lang="ts" setup>
 import GameRunner from "~~/models/GameRunner";
 import Piece from "~~/models/Piece";
@@ -115,18 +73,16 @@ const emit = defineEmits<{
 const toPurchase = ref<null | PieceTypes>(null);
 
 const handleBoardClick = (loc: BoardLocation) => {
-  // Handle removal
-
   if (toPurchase.value === null) return;
   emit("purchaseAndPlace", toPurchase.value, loc);
   toPurchase.value = null;
 };
 
-const undoPurchase = (piece: Piece) => {
-  if (piece.purchaseLocked) return false;
-};
-
-const canPlace = (location: BoardLocation) => {
-  return true;
+// TODO: Additional logic to force "you have to purchase a king"...
+const purchaseDisabled = (pieceType: PieceTypes) => {
+  return (
+    props.TheGameRunner.cash[props.TheGameRunner.player] <
+    props.TheGameRunner.piecePrices[pieceType]
+  );
 };
 </script>
