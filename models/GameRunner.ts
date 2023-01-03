@@ -127,6 +127,10 @@ export default class GameRunner {
       this.tick();
     }, 125);
   }
+  pause() {
+    if (typeof this.clock === "number") clearInterval(this.clock);
+    this.clock = 0;
+  }
   stop() {
     if (typeof this.clock === "number") clearInterval(this.clock);
     this.clock = null;
@@ -157,7 +161,6 @@ export default class GameRunner {
     }
 
     if (this.measure === 3 && this.beat === 0) {
-      this.setupPieceMovementPathing();
       this.unstunForNextRound();
     }
 
@@ -285,6 +288,19 @@ export default class GameRunner {
     });
 
     return currentPrices;
+  }
+
+  get piecesWithMovement(): Array<Piece> {
+    const pieces: Array<Piece> = [];
+
+    this.gameBoard.map((row) => {
+      row.map((piece) => {
+        if (piece === null || !piece.moveTo) return;
+        pieces.push(piece);
+      });
+    });
+
+    return pieces;
   }
 
   purchaseAndPlace(payload: {
@@ -443,6 +459,9 @@ export default class GameRunner {
 
     piece.moveTo = moveTo;
     piece.firstMove = false;
+
+    piece.movementPathing = this.setupPieceMovementPathing(piece);
+
     return piece;
   }
 
@@ -512,58 +531,98 @@ export default class GameRunner {
     }
   }
 
-  setupPieceMovementPathing(): void {
-    // const tempBoard = newBoard();
-    this.gameBoard.map((row) => {
-      row.map((piece) => {
-        if (piece === null || piece.moveTo === null) return;
-        const distance = Math.max(
-          Math.abs(piece.location.r - piece.moveTo.r),
-          Math.abs(piece.location.c - piece.moveTo.c)
-        );
+  setupPieceMovementPathing(piece: Piece): Piece["movementPathing"] {
+    if (!piece.moveTo) throw "Piece has no moveTo property";
+    if (piece.movementPathing.length !== 0)
+      throw "Piece already has movementPathing";
 
-        for (let i = 1; i < distance; i++) {
-          const r =
-            piece.location.r +
-            (i * (piece.moveTo.r - piece.location.r)) / distance;
-          const c =
-            piece.location.c +
-            (i * (piece.moveTo.c - piece.location.c)) / distance;
+    // Such a weird exception better to handle it here
+    if (piece.type === "knight") return this.setupKnightMovementPathing(piece);
 
-          const interval = 12 / (distance - 1);
-          let beat = Math.floor((i - 1) * interval);
+    const movementPathing = [];
 
-          /* D6 exception explained */
+    const distance = Math.max(
+      Math.abs(piece.location.r - piece.moveTo.r),
+      Math.abs(piece.location.c - piece.moveTo.c)
+    );
 
-          // d1:                                      (12)
-          // d2: 0,                                   (12)
-          // d3: 0,                6,                 (12)
-          // d4: 0,          4,          8,           (12)
-          // d5: 0,       3,       6,       9,        (12)
-          // d6: 0,    2.4,  4.8,     7.2,  9.6,      (12) <-- Exception!
-          // d7: 0,    2,    4,    6,    8,    10,    (12)
+    for (let i = 1; i < distance; i++) {
+      const r =
+        piece.location.r + (i * (piece.moveTo.r - piece.location.r)) / distance;
+      const c =
+        piece.location.c + (i * (piece.moveTo.c - piece.location.c)) / distance;
 
-          // Can't have decimals, so Math.floor(beat)
-          // Works for all except 7.2.         [0  2  4   7  9  X] feels like a misplaced beat.
-          // We want triplet | double rythem   [0  2  4  6   9  X]
-          if (distance === 6 && i === 4) beat = 6;
+      const interval = 12 / (distance - 1);
+      let beat = Math.floor((i - 1) * interval);
 
-          piece.movementPathing.push({
-            location: { r, c },
-            beat,
-          });
-        }
+      /* D6 exception explained */
 
-        // All movement ends on beat 12 at final location
-        piece.movementPathing.push({
-          location: { r: piece.moveTo.r, c: piece.moveTo.c },
-          beat: 12,
-        });
+      // d1:                                      (12)
+      // d2: 0,                                   (12)
+      // d3: 0,                6,                 (12)
+      // d4: 0,          4,          8,           (12)
+      // d5: 0,       3,       6,       9,        (12)
+      // d6: 0,    2.4,  4.8,     7.2,  9.6,      (12) <-- Exception!
+      // d7: 0,    2,    4,    6,    8,    10,    (12)
 
-        // Reverse the pathing so we can .find() easier
-        piece.movementPathing.reverse();
+      // Can't have decimals, so Math.floor(beat)
+      // Works for all except 7.2.         [0  2  4   7  9  X] feels like a misplaced beat.
+      // We want triplet | double rythem   [0  2  4  6   9  X]
+      if (distance === 6 && i === 4) beat = 6;
+
+      movementPathing.push({
+        location: { r, c },
+        beat,
       });
+    }
+
+    // All movement ends on beat 12 at final location
+    movementPathing.push({
+      location: { r: piece.moveTo.r, c: piece.moveTo.c },
+      beat: 12,
     });
+
+    // Reverse the pathing so we can .find() easier
+    return movementPathing.reverse();
+  }
+
+  setupKnightMovementPathing(piece: Piece): Piece["movementPathing"] {
+    if (!piece.moveTo) throw "Piece has no moveTo property";
+
+    // Knights always travel longest distance first EG:
+    // 0,0 -> 2,1: [{0, 0}, {1, 0}, {2, 0}, {2, 1}]
+
+    // @ts-ignore
+    const yMod: 0 | 2 | -2 =
+      Math.abs(piece.moveTo.r - piece.location.r) === 1
+        ? 0
+        : piece.moveTo.r - piece.location.r;
+    // @ts-ignore
+    const xMod: 0 | 2 | -2 =
+      Math.abs(piece.moveTo.c - piece.location.c) === 1
+        ? 0
+        : piece.moveTo.c - piece.location.c;
+
+    const movementPathing = [];
+    movementPathing.push({
+      beat: 0,
+      location: {
+        r: piece.location.r + yMod / 2,
+        c: piece.location.c + xMod / 2,
+      },
+    });
+
+    movementPathing.push({
+      beat: 6,
+      location: {
+        r: piece.location.r + yMod,
+        c: piece.location.c + xMod,
+      },
+    });
+
+    movementPathing.push({ beat: 12, location: piece.moveTo });
+
+    return movementPathing.reverse();
   }
 
   unstunForNextRound() {

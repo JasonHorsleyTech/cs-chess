@@ -68,7 +68,7 @@ export default class GameConnector {
     const { type, content } = receiveEvent;
     const { resolve, reject } = this.callbacks[type];
 
-    console.log("Host: I received response from client: ", receiveEvent);
+    // console.log("Host: I received response from client: ", receiveEvent);
 
     if (resolve === null) {
       this.respond(type, content, "retry");
@@ -97,7 +97,7 @@ export default class GameConnector {
     const { type, content, responseCode } = responseEvent;
     const { resolve, reject } = this.callbacks[type];
 
-    console.log("Client: I received response from host: ", responseEvent);
+    // console.log("Client: I received response from host: ", responseEvent);
 
     if (!resolve) throw "Weird error, idk you figure it out.";
 
@@ -134,21 +134,28 @@ export default class GameConnector {
       content: Object.assign(content, { stamp: Date.now() }),
       responseCode,
     };
-    console.log(`Host: I responded to ${type} with: `, payload);
+    // console.log(`Host: I responded to ${type} with: `, payload);
 
     this.dc.send(payload);
   }
 
   oneWayPing: number = -1;
+
   /* ----------------------------- Events! ----------------------------- */
   ping(initiate: boolean = true) {
     return new Promise<void>((resolve, reject) => {
-      // TODO: Callbacks is new EventCallback(), which sets resolve and reject, but also a timeout (which rejects) and an always (which clears everything out);
+      const rejectCallback = (reason = "") => {
+        reject(reason);
+      };
+      const pingFail = window.setTimeout(() => {
+        rejectCallback("Ping timed out");
+      }, 1000);
+
       this.callbacks["ping"] = {
-        reject: () => {
-          reject("Ping failed");
-        },
+        reject: rejectCallback,
         resolve: (content: DataConnectionEvent["content"]) => {
+          clearTimeout(pingFail);
+
           this.oneWayPing = Date.now() - content.stamp;
           if (this.oneWayPing >= this.#maxPing) {
             throw `Ping too high (${this.oneWayPing}ms`;

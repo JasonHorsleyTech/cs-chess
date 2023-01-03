@@ -185,6 +185,7 @@ onMounted(async () => {
 
     TheGameRunner.start();
   } catch (error) {
+    console.log(error)
     // connection error... back to main?
   }
 });

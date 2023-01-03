@@ -1,8 +1,8 @@
 ## Unplayable until 
-- [ ] Fix bishop movement
-- [ ] Fix horse movement
+- [X] Fix bishop movement
+- [X] Fix horse movement
+    - [X] Fix movement arrows, maybe use scoped slots and a Board.vue components?
 - [ ] Fix HMR so I always get a good re-setup
-- [ ] Fix movement arrows, maybe use scoped slots and a Board.vue components?
 - [ ] Price the purcahse squares so it's costly to put pieces in the other guys "rows".
 - [ ] Add income from capturing pieces
 - [ ] Add income from winning games

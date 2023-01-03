@@ -21,68 +21,33 @@
       </p>
     </div>
 
-    <div
-      class="flex mx-auto border border-gray-400"
-      :class="[
-        TheGameRunner.player === 'black' ? 'flex-col-reverse' : 'flex-col',
-      ]"
+    <GameBoard
+      :player="TheGameRunner.player"
+      :board="TheGameRunner.gameBoard"
+      :disabled="
+        (TheGameRunner.measure == 2 && TheGameRunner.beat >= 6) ||
+        TheGameRunner.measure >= 3
+      "
+      @clickSquare="handleBoardClick"
     >
-      <div
-        v-for="(row, r) in TheGameRunner.gameBoard"
-        class="flex border-gray-300"
-        :class="[
-          TheGameRunner.player === 'black' ? 'flex-row-reverse' : 'flex-row',
-        ]"
-      >
-        <div v-for="(pieceOnBoard, c) in row" class="grid">
-          <div
-            class="group relative w-8 h-8 grid place-content-stretch"
-            :class="[
-              // Checkerboard pattern
-              (c + r) % 2 ? 'bg-gray-300/50' : 'bg-gray-50/50',
-              'hover:bg-gray-400 cursor-pointer',
-              pieceSelected !== null ? 'hover:bg-blue-200' : '',
-              pieceOnBoard?.stunned ||
-              (TheGameRunner.measure == 2 && TheGameRunner.beat >= 6) ||
-              TheGameRunner.measure >= 3
-                ? 'pointer-events-none opacity-50'
-                : 'pointer-events-auto',
-            ]"
-            @click="handleBoardClick({ r, c })"
-          >
-            <div v-if="pieceOnBoard === null" />
-            <GamePiece
-              v-else-if="pieceOnBoard.player === TheGameRunner.player"
-              :pieceType="pieceOnBoard.type"
-              :player="pieceOnBoard.player"
-              :stunned="pieceOnBoard.stunned"
-              :class="[
-                pieceSelected === pieceOnBoard
-                  ? 'animate-wiggle bg-black/25'
-                  : '',
-              ]"
-            />
-            <GamePiece
-              v-else
-              :pieceType="pieceOnBoard.type"
-              :player="pieceOnBoard.player"
-              :stunned="pieceOnBoard.stunned"
-            />
-
-            <GameMovementArrow
-              v-if="
-                pieceOnBoard !== null &&
-                pieceOnBoard.moveTo !== null &&
-                pieceOnBoard.player === TheGameRunner.player
-              "
-              :player="pieceOnBoard.player"
-              :moveFrom="pieceOnBoard.location"
-              :moveTo="pieceOnBoard.moveTo"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+      <template #piece="piece">
+        <GamePiece
+          :pieceType="piece.type"
+          :player="piece.player"
+          :stunned="piece.stunned"
+          :class="[pieceSelected === piece ? 'animate-wiggle bg-black/25' : '']"
+        />
+      </template>
+      <!-- <template #square="{ r, c }">
+        <p>{{ r }}, {{ c }}</p>
+      </template> -->
+      <template #board>
+        <GameMovementArrows
+          :piecesWithMovement="TheGameRunner.piecesWithMovement"
+          :player="TheGameRunner.player"
+        />
+      </template>
+    </GameBoard>
   </div>
 </template>
 <script lang="ts" setup>

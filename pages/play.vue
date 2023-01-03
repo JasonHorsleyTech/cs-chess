@@ -76,15 +76,16 @@ const setupDataConnection = () => {
 
       ThePeerInstance.on("open", () => {
         status.value = "connecting-to-host";
-        const dc = ThePeerInstance.connect(id, {
-          metadata: { secret },
-        });
-
-        resolve(dc);
+        try {
+          const dc = ThePeerInstance.connect(id, {
+            metadata: { secret },
+          });
+          resolve(dc);
+        } catch (error) {
+          console.log(error);
+        }
       });
     }
-
-    // TODO: reject for timeout to PeerJS
   });
 };
 
