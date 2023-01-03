@@ -13,6 +13,13 @@
       :TheGameRunner="TheGameRunner"
       @queueMove="queueMove"
     />
+    <div v-else-if="TheGameRunner.gameMode === 'gloat'">
+      <template v-if="!TheGameRunner.gameWinner">
+        <p>Match: {{ TheGameRunner.wins[TheGameRunner.wins.length - 1] }}</p>
+        <p>Restarting in {{ Math.abs(4 - TheGameRunner.measure) }}</p>
+      </template>
+      <p v-else>Game: {{ TheGameRunner.gameWinner }}</p>
+    </div>
   </div>
 </template>
 <script lang="ts" setup>
@@ -35,6 +42,9 @@ const TheGameRunner = reactive(
     player: player.value,
   })
 );
+
+// @ts-ignore
+window.GameRunner = TheGameRunner;
 
 const purchaseAndPlace = async (type: PieceTypes, location: BoardLocation) => {
   const payload = {
@@ -173,7 +183,7 @@ onMounted(async () => {
 
     TheGameRunner.start();
   } catch (error) {
-    console.log(error)
+    console.log(error);
     // connection error... back to main?
   }
 });

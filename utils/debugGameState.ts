@@ -4,9 +4,9 @@ import Piece from "~~/models/Piece";
 // Manually tinker up a game based on some particular state I'm trying to debug
 const debugGameState = (TheGameRunner: GameRunner) => {
   setTimeout(() => {
-    TheGameRunner.beat = 7;
-    TheGameRunner.measure = 3;
-    TheGameRunner.pause();
+    // TheGameRunner.beat = 7;
+    // TheGameRunner.measure = 3;
+    // TheGameRunner.pause();
   }, 1000);
 
   //   TheGameRunner.gameBoard = [

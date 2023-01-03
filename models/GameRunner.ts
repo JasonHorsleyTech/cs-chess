@@ -101,6 +101,7 @@ const newBoard = () => {
 
 export default class GameRunner {
   static size: number = 8;
+  static maxMatches: number = 5;
 
   /** Internal game clock */
   measure: 0 | 1 | 2 | 3 = 0;
@@ -109,11 +110,11 @@ export default class GameRunner {
 
   player: "black" | "white";
   gameBoard: Array<Array<null | Piece>>;
-  gameMode: "purchase" | "move";
+  gameMode: "purchase" | "move" | "gloat";
 
   // Normal chess starts with 43 in piece value
   cash: { black: number; white: number } = { black: 60, white: 60 };
-  wins: Array<"black" | "white" | null> = [null, null, null, null, null];
+  wins: Array<"black" | "white" | "tie"> = [];
 
   constructor(setupOptions: { player: "black" | "white" }) {
     this.player = setupOptions.player;
@@ -128,13 +129,10 @@ export default class GameRunner {
       this.tick();
     }, 125);
   }
-  pause() {
-    if (typeof this.clock === "number") clearInterval(this.clock);
-    this.clock = 0;
-  }
+
   stop() {
     if (typeof this.clock === "number") clearInterval(this.clock);
-    this.clock = null;
+    this.clock = 0;
   }
 
   /** Measure: --|0000|1111|2222|3333|-- **/
@@ -151,47 +149,38 @@ export default class GameRunner {
       this.measure = 0;
     }
 
-    /** Here:  --|    |    |  X |    |-- **/
-    if (this.measure === 2 && this.beat === 9) {
-      // Initiate data sync
+    if (this.gameMode === "move" && this.measure === 3) {
+      if (this.beat === 0) {
+        this.unstunForNextRound();
+      }
+      this.stepPieces(this.beat);
     }
 
-    /** Here:  --|    |    |   X|    |-- **/
-    if (this.measure === 2 && this.beat === 11) {
-      // If sync hasn't resolved, fail the game
-    }
-
-    if (this.measure === 3 && this.beat === 0) {
-      this.unstunForNextRound();
-    }
-
-    if (
-      (this.gameMode === "move" && this.measure === 3) ||
-      (this.measure === 0 && this.beat === 0)
-    ) {
+    if (this.measure === 0 && this.beat === 0) {
       // Need to loop one final time at measure0 beat0, running same collision logic
-      const beat = this.measure === 0 && this.beat === 0 ? 12 : this.beat;
-      this.stepPieces(beat);
-    }
+      if (this.gameMode === "move") {
+        this.stepPieces(12);
+        this.clearMovementPathing();
+      } else if (
+        this.gameMode === "purchase" &&
+        this.purchasesPendingCount === 0
+      ) {
+        this.gameMode = "move";
+      } else if (this.gameMode === "gloat") {
+        this.gameBoard = newBoard();
+        this.gameMode = "purchase";
+      }
 
-    // No new purchased at start of new 4 bars means we tick into move mode
-    if (
-      this.gameMode === "purchase" &&
-      this.measure === 0 &&
-      this.beat === 0 &&
-      this.purchasesPendingCount === 0
-    ) {
-      this.gameMode = "move";
-    }
+      // Always check win on clock tickover
+      const matchWinner = this.checkMatchWinner();
+      if (matchWinner) {
+        this.wins.push(matchWinner);
+        this.gameMode = "gloat";
 
-    if (this.gameMode === "move" && this.measure === 0 && this.beat === 0) {
-      this.gameBoard.map((row) => {
-        row.map((piece) => {
-          if (piece === null) return;
-          piece.movementPathing = [];
-          piece.moveTo = null;
-        });
-      });
+        if (this.gameWinner) {
+          this.stop();
+        }
+      }
     }
   }
 
@@ -222,6 +211,49 @@ export default class GameRunner {
     }
 
     return piece;
+  }
+
+  checkMatchWinner(): "white" | "black" | "tie" | false {
+    if (this.gameMode !== "move") return false;
+
+    const whiteKing = this.gameBoard
+      .flat()
+      .find((piece) => piece?.type === "king" && piece.player === "white");
+    const blackKing = this.gameBoard
+      .flat()
+      .find((piece) => piece?.type === "king" && piece.player === "black");
+
+    if (whiteKing === undefined && blackKing === undefined) return "tie";
+    if (whiteKing === undefined) return "black";
+    if (blackKing === undefined) return "white";
+    return false;
+  }
+
+  // TODO: Finite this fucking state machine
+  get gameWinner(): "white" | "black" | "tie" | undefined {
+    const counts = {
+      white: 0,
+      black: 0,
+      tie: 0,
+    };
+    const needed = Math.ceil(GameRunner.maxMatches / 2);
+    let played = 0;
+
+    this.wins.map((winner) => {
+      counts[winner]++;
+      played++;
+    });
+
+    if (counts.white >= needed) return "white";
+    if (counts.black >= needed) return "black";
+
+    let remaining = GameRunner.maxMatches - played;
+    if (counts.white + remaining < counts.black) return "black";
+    if (counts.black + remaining < counts.white) return "white";
+
+    if (played < GameRunner.maxMatches) return undefined;
+    if (counts.white === counts.black) return "tie";
+    return counts.white > counts.black ? "white" : "black";
   }
 
   /**
@@ -642,6 +674,16 @@ export default class GameRunner {
       row.map((piece) => {
         if (piece === null) return;
         piece.stunned = false;
+      });
+    });
+  }
+
+  clearMovementPathing() {
+    this.gameBoard.map((row) => {
+      row.map((piece) => {
+        if (piece === null) return;
+        piece.movementPathing = [];
+        piece.moveTo = null;
       });
     });
   }

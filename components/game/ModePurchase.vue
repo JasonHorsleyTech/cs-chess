@@ -1,8 +1,15 @@
 <template>
   <div class="grid gap-4">
-    <GameMatchCounter :wins="TheGameRunner.wins" />
+    <GameMatchCounter
+      :wins="TheGameRunner.wins"
+      :player="TheGameRunner.player"
+    />
 
-    <GameBeatAndCash :beat="TheGameRunner.beat" :measure="TheGameRunner.measure" :cash="TheGameRunner.cash[TheGameRunner.player]" />
+    <GameBeatAndCash
+      :beat="TheGameRunner.beat"
+      :measure="TheGameRunner.measure"
+      :cash="TheGameRunner.cash[TheGameRunner.player]"
+    />
 
     <GameBoard
       :player="TheGameRunner.player"
