@@ -45,7 +45,7 @@
 import Piece from "../Piece.vue";
 
 const props = defineProps<{
-  pieceType: Piece["type"];
+  pieceType: PieceTypes
   player: "black" | "white";
   price: number;
   count: number;

@@ -161,11 +161,11 @@ export default class GameRunner {
       if (this.gameMode === "move") {
         this.stepPieces(12);
         this.clearMovementPathing();
-      } else if (
-        this.gameMode === "purchase" &&
-        this.purchasesPendingCount === 0
-      ) {
-        this.gameMode = "move";
+      } else if (this.gameMode === "purchase") {
+        if (this.purchasesPendingCount === 0) {
+          this.gameMode = "move";
+        }
+        this.lockPendingPurchases();
       } else if (this.gameMode === "gloat") {
         this.gameBoard = newBoard();
         this.gameMode = "purchase";
@@ -338,13 +338,21 @@ export default class GameRunner {
         if (piece === null) return;
 
         if (piece.purchaseLocked === false) {
-          piece.purchaseLocked = true;
           piecesLocked++;
         }
       });
     });
 
     return piecesLocked;
+  }
+
+  lockPendingPurchases(): void {
+    this.gameBoard.map((row) => {
+      row.map((piece) => {
+        if (piece === null) return;
+        piece.purchaseLocked = true;
+      });
+    });
   }
 
   purchaseAndPlace(payload: {
@@ -364,7 +372,7 @@ export default class GameRunner {
     if (price > this.cash[player]) throw "Cannot afford that piece";
 
     this.cash[player] -= price;
-    const piece = new Piece(player, type, location, null, false);
+    const piece = new Piece(player, type, location);
     this.gameBoard[location.r][location.c] = piece;
     return piece;
   }
