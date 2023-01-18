@@ -104,6 +104,7 @@ export default class GameRunner {
   static maxMatches: number = 5;
 
   /** Internal game clock */
+  bpm: number = 125;
   measure: 0 | 1 | 2 | 3 = 0;
   beat: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 = 0;
   clock: NodeJS.Timer | number | null = null;
@@ -127,12 +128,16 @@ export default class GameRunner {
   start() {
     this.clock = setInterval(() => {
       this.tick();
-    }, 125);
+    }, this.bpm);
   }
 
   stop() {
     if (typeof this.clock === "number") clearInterval(this.clock);
     this.clock = 0;
+  }
+
+  get msUntilEndOfPhrase(): Number {
+    return ((3 - this.measure) * 12 + (11 - this.beat)) * this.bpm;
   }
 
   /** Measure: --|0000|1111|2222|3333|-- **/

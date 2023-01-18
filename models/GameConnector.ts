@@ -23,6 +23,7 @@ export default class GameConnector {
     "sync-start": { resolve: null, reject: null },
     "purchase-and-place": { resolve: null, reject: null },
     "queue-move": { resolve: null, reject: null },
+    "sync-game-state": { resolve: null, reject: null },
   };
 
   constructor(dc: DataConnection) {
@@ -215,15 +216,7 @@ export default class GameConnector {
     return new Promise<void>((resolve, reject) => {
       this.send("purchase-and-place", payload);
 
-      //   this.callbacks["purchase-and-place"] = {
-      //     reject,
-      //     resolve: (content: DataConnectionEvent["content"]) => {
-      //       resolve();
-      //       return content;
-      //     },
-      //   };
-      // shit
-      //   this.send("purchase-and-place");
+      // Callbacks set up in main
     });
   }
 
@@ -235,6 +228,16 @@ export default class GameConnector {
   }) {
     return new Promise<void>((resolve, reject) => {
       this.send("queue-move", payload);
+
+      // Callbacks set up in main
+    });
+  }
+
+  syncGameState(payload: { gameBoard: string; endOfPhrase: Number }) {
+    return new Promise<void>((resolve, reject) => {
+      this.send("sync-game-state", payload);
+
+      // Callbacks set up in main
     });
   }
 

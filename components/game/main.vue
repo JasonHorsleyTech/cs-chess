@@ -43,9 +43,6 @@ const TheGameRunner = reactive(
   })
 );
 
-// @ts-ignore
-window.GameRunner = TheGameRunner;
-
 const purchaseAndPlace = async (type: PieceTypes, location: BoardLocation) => {
   const payload = {
     type,
@@ -168,9 +165,32 @@ props.TheGameConnector.callbacks["queue-move"] = {
   reject: () => {},
 };
 
-const beat = computed(() => {
-  return [TheGameRunner.beat, TheGameRunner.measure];
+const gameClock = computed(() => {
+  return [TheGameRunner.measure, TheGameRunner.beat];
 });
+watch(gameClock, async ([measure, beat]) => {
+  if (measure === 2 && beat === 5) {
+    if (props.role === "client") {
+      props.TheGameConnector.syncGameState({
+        gameBoard: JSON.stringify(TheGameRunner.gameBoard),
+        endOfPhrase: TheGameRunner.msUntilEndOfPhrase,
+      });
+    }
+  }
+});
+
+props.TheGameConnector.callbacks["sync-game-state"] = {
+  resolve: (content: DataConnectionEvent["content"]) => {
+    const { gameBoard, endOfPhrase } = content;
+    const localEndOfPhrase = TheGameRunner.msUntilEndOfPhrase
+    console.clear();
+    console.log(content);
+    console.log(localEndOfPhrase);
+
+    return content;
+  },
+  reject: () => {},
+};
 
 onMounted(async () => {
   try {
@@ -179,7 +199,7 @@ onMounted(async () => {
     );
     await delay(startTime - Date.now());
 
-    debugGameState(TheGameRunner);
+    debugGameState(TheGameRunner, props.role === "client");
 
     TheGameRunner.start();
   } catch (error) {
