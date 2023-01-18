@@ -20,6 +20,7 @@ export default class GameConnector {
   status: "connecting" | "connected" | "disconnected" = "connecting";
   callbacks: GameConnectorEventCallbacks = {
     ping: { resolve: null, reject: null },
+    "tutorial-finished": { resolve: null, reject: null },
     "sync-start": { resolve: null, reject: null },
     "purchase-and-place": { resolve: null, reject: null },
     "queue-move": { resolve: null, reject: null },
@@ -208,36 +209,17 @@ export default class GameConnector {
     });
   }
 
-  purchaseAndPlace(payload: {
-    type: PieceTypes;
-    location: BoardLocation;
-    player: "black" | "white";
-  }) {
+  // Generic events: Used for anything where the callback logic is set up elsewhere
+  event(
+    event:
+      | "purchase-and-place"
+      | "queue-move"
+      | "sync-game-state"
+      | "tutorial-finished",
+    payload: Object = {}
+  ) {
     return new Promise<void>((resolve, reject) => {
-      this.send("purchase-and-place", payload);
-
-      // Callbacks set up in main
-    });
-  }
-
-  queueMove(payload: {
-    type: PieceTypes;
-    location: BoardLocation;
-    moveTo: BoardLocation;
-    player: "black" | "white";
-  }) {
-    return new Promise<void>((resolve, reject) => {
-      this.send("queue-move", payload);
-
-      // Callbacks set up in main
-    });
-  }
-
-  syncGameState(payload: { gameBoard: string; moveMeasureEnd: number }) {
-    return new Promise<void>((resolve, reject) => {
-      this.send("sync-game-state", payload);
-
-      // Callbacks set up in main
+      this.send(event, payload);
     });
   }
 

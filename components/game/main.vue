@@ -1,6 +1,7 @@
 <template>
   <div class="max-w-xl mx-auto py-4">
-    <p v-if="TheGameRunner.clock === null">Counting us off...</p>
+    <!-- <GameTutorial @ready="tutorialFinished" /> -->
+    <p v-if="TheGameRunner.clock === null">Counting us off!</p>
     <GameModePurchase
       :player="player"
       :TheGameRunner="TheGameRunner"
@@ -58,7 +59,7 @@ const purchaseAndPlace = async (type: PieceTypes, location: BoardLocation) => {
 
   try {
     // p2 verifies move as well
-    await props.TheGameConnector.purchaseAndPlace(payload);
+    await props.TheGameConnector.event("purchase-and-place", payload);
   } catch (error) {
     // P2 disagrees with move?? Maybe a race condition
   }
@@ -123,7 +124,7 @@ const queueMove = async (
 
   try {
     // p2 verifies move as well
-    await props.TheGameConnector.queueMove(payload);
+    await props.TheGameConnector.event("queue-move", payload);
   } catch (error) {
     console.error(error);
     piece.moveTo = null;
@@ -175,7 +176,7 @@ watch(gameClock, async ([measure, beat]) => {
   if (measure === 2 && beat === 5) {
     if (props.role === "client") {
       const moveMeasureEnd = 18 * TheGameRunner.bpm;
-      props.TheGameConnector.syncGameState({
+      props.TheGameConnector.event("sync-game-state", {
         gameBoard: JSON.stringify(TheGameRunner.gameBoard),
         moveMeasureEnd,
       });
@@ -199,7 +200,11 @@ props.TheGameConnector.callbacks["sync-game-state"] = {
   reject: () => {},
 };
 
-onMounted(async () => {
+// const tutorialFinished = async () => {
+//   await props.TheGameConnector.event("tutorial-finished");
+// };
+
+const startGame = async () => {
   try {
     const startTime = await props.TheGameConnector.syncStart(
       props.role === "client"
@@ -213,6 +218,10 @@ onMounted(async () => {
     console.log(error);
     // connection error... back to main?
   }
+};
+onMounted(() => {
+  // If skipTutorial option checked, startGame()
+  startGame();
 });
 onUnmounted(() => {
   TheGameRunner.stop();

@@ -4,7 +4,13 @@ declare global {
   type ConfirmRejectCallbacks = [() => void, (rejectReason? = string) => void];
 
   interface DataConnectionEvent {
-    type: "ping" | "sync-start" | "purchase-and-place" | "queue-move" | "sync-game-state";
+    type:
+      | "ping"
+      | "tutorial-finished"
+      | "sync-start"
+      | "purchase-and-place"
+      | "queue-move"
+      | "sync-game-state";
     content: {
       stamp: number;
       [key: string]: any;
@@ -14,6 +20,10 @@ declare global {
 
   interface GameConnectorEventCallbacks {
     ping: {
+      resolve: null | ((any) => DataConnectionEvent["content"]);
+      reject: null | (() => void);
+    };
+    "tutorial-finished": {
       resolve: null | ((any) => DataConnectionEvent["content"]);
       reject: null | (() => void);
     };
