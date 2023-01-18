@@ -1,7 +1,9 @@
 <template>
   <div class="max-w-xl mx-auto py-4">
-    <!-- <GameTutorial @ready="tutorialFinished" /> -->
-    <p v-if="TheGameRunner.clock === null">Counting us off!</p>
+    <GameModeTutorial
+      v-if="TheGameRunner.clock === null"
+      @ready="tutorialFinished"
+    />
     <GameModePurchase
       :player="player"
       :TheGameRunner="TheGameRunner"
@@ -200,9 +202,23 @@ props.TheGameConnector.callbacks["sync-game-state"] = {
   reject: () => {},
 };
 
-// const tutorialFinished = async () => {
-//   await props.TheGameConnector.event("tutorial-finished");
-// };
+let tutorialFinishedLocally: boolean = false;
+const tutorialFinished = async () => {
+  tutorialFinishedLocally = true;
+  await props.TheGameConnector.event("tutorial-finished", {
+    ready: tutorialFinishedLocally,
+  });
+};
+props.TheGameConnector.callbacks["tutorial-finished"] = {
+  resolve: (content: DataConnectionEvent["content"]) => {
+    console.log(content)
+    if (content.ready && tutorialFinishedLocally) {
+        startGame();
+    }
+    return Object.assign(content, { ready: tutorialFinishedLocally });
+  },
+  reject: () => {},
+};
 
 const startGame = async () => {
   try {
@@ -221,7 +237,6 @@ const startGame = async () => {
 };
 onMounted(() => {
   // If skipTutorial option checked, startGame()
-  startGame();
 });
 onUnmounted(() => {
   TheGameRunner.stop();

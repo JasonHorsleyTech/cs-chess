@@ -20,7 +20,7 @@
 <script lang="ts" setup>
 const props = withDefaults(
   defineProps<{
-    type: "success" | "info" | "warning" | "error";
+    type?: "success" | "info" | "warning" | "error";
   }>(),
   {
     type: "info",

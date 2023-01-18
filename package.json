@@ -8,6 +8,7 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.9",
     "@types/lodash": "^4.14.191",
     "@types/uuid": "^9.0.0",
     "autoprefixer": "^10.4.13",
