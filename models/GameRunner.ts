@@ -174,16 +174,20 @@ export default class GameRunner {
         this.stepPieces(12);
         this.clearMovementPathing();
       } else if (this.gameMode === "purchase") {
-        if (this.purchasesPendingCount === 0) {
+        if (
+          this.purchasesPendingCount === 0 &&
+          this.boardKings.whiteKing &&
+          this.boardKings.blackKing
+        ) {
           this.gameMode = "move";
         }
+
         this.lockPendingPurchases();
       } else if (this.gameMode === "gloat") {
         this.gameBoard = newBoard();
         this.gameMode = "purchase";
       }
 
-      // Always check win on clock tickover
       const matchWinner = this.checkMatchWinner();
       if (matchWinner) {
         this.wins.push(matchWinner);
@@ -225,19 +229,33 @@ export default class GameRunner {
     return piece;
   }
 
+  get boardHasPieces(): boolean {
+    return !this.gameBoard.flat().every((s) => s === null);
+  }
+
+  get boardKings(): { blackKing: Piece | false; whiteKing: Piece | false } {
+    const whiteKing =
+      this.gameBoard
+        .flat()
+        .find((piece) => piece?.type === "king" && piece.player === "white") ||
+      false;
+    const blackKing =
+      this.gameBoard
+        .flat()
+        .find((piece) => piece?.type === "king" && piece.player === "black") ||
+      false;
+
+    return { whiteKing, blackKing };
+  }
+
   checkMatchWinner(): "white" | "black" | "tie" | false {
     if (this.gameMode !== "move") return false;
 
-    const whiteKing = this.gameBoard
-      .flat()
-      .find((piece) => piece?.type === "king" && piece.player === "white");
-    const blackKing = this.gameBoard
-      .flat()
-      .find((piece) => piece?.type === "king" && piece.player === "black");
+    const { whiteKing, blackKing } = this.boardKings;
 
-    if (whiteKing === undefined && blackKing === undefined) return "tie";
-    if (whiteKing === undefined) return "black";
-    if (blackKing === undefined) return "white";
+    if (!whiteKing && !blackKing) return "tie";
+    if (!whiteKing) return "black";
+    if (!blackKing) return "white";
     return false;
   }
 

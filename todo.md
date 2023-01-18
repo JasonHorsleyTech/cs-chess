@@ -8,7 +8,8 @@
 - [ ] Add income from capturing pieces
 - [ ] Add income from winning games
 - [ ] AWS it
-- [ ] On "measure 3 beat 6" (the lockup period where both players sync), add a internal clock catchup/slowdown mechanism to accound for small variations between the two browser's frequencies
+- [ ] Pawn promotion
+- [X] On "measure 3 beat 6" (the lockup period where both players sync), add a internal clock catchup/slowdown mechanism to accound for small variations between the two browser's frequencies
 
 ## Bad experience until
 

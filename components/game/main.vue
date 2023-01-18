@@ -43,6 +43,9 @@ const TheGameRunner = reactive(
   })
 );
 
+// @ts-ignore
+window.TheGameRunner = TheGameRunner;
+
 const purchaseAndPlace = async (type: PieceTypes, location: BoardLocation) => {
   const payload = {
     type,
