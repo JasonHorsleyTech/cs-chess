@@ -117,6 +117,9 @@ export default class GameRunner {
   cash: { black: number; white: number } = { black: 60, white: 60 };
   wins: Array<"black" | "white" | "tie"> = [];
 
+  // How many MS, total, does THIS GameRunnerInstance need to catchup/slowdown in order to sync with the OTHER GameRunnerInstance
+  moveMeasureCatchup: number = 0;
+
   constructor(setupOptions: { player: "black" | "white" }) {
     this.player = setupOptions.player;
 
@@ -125,19 +128,15 @@ export default class GameRunner {
   }
 
   // Start the game
-  start() {
+  start(bpm: null | number = null) {
     this.clock = setInterval(() => {
       this.tick();
-    }, this.bpm);
+    }, bpm || this.bpm);
   }
 
   stop() {
     if (typeof this.clock === "number") clearInterval(this.clock);
     this.clock = 0;
-  }
-
-  get msUntilEndOfPhrase(): Number {
-    return ((3 - this.measure) * 12 + (11 - this.beat)) * this.bpm;
   }
 
   /** Measure: --|0000|1111|2222|3333|-- **/
@@ -154,10 +153,18 @@ export default class GameRunner {
       this.measure = 0;
     }
 
+    if (this.measure === 3 && this.beat === 0) {
+      if (this.moveMeasureCatchup !== 0) {
+        this.stop();
+        this.start(this.bpm + this.moveMeasureCatchup / 12);
+      }
+    }
+
     if (this.gameMode === "move" && this.measure === 3) {
       if (this.beat === 0) {
         this.unstunForNextRound();
       }
+
       this.stepPieces(this.beat);
     }
 

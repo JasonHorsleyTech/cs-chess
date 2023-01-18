@@ -233,7 +233,7 @@ export default class GameConnector {
     });
   }
 
-  syncGameState(payload: { gameBoard: string; endOfPhrase: Number }) {
+  syncGameState(payload: { gameBoard: string; moveMeasureEnd: number }) {
     return new Promise<void>((resolve, reject) => {
       this.send("sync-game-state", payload);
 

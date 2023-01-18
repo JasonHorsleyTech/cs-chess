@@ -171,9 +171,10 @@ const gameClock = computed(() => {
 watch(gameClock, async ([measure, beat]) => {
   if (measure === 2 && beat === 5) {
     if (props.role === "client") {
+      const moveMeasureEnd = 18 * TheGameRunner.bpm;
       props.TheGameConnector.syncGameState({
         gameBoard: JSON.stringify(TheGameRunner.gameBoard),
-        endOfPhrase: TheGameRunner.msUntilEndOfPhrase,
+        moveMeasureEnd,
       });
     }
   }
@@ -181,11 +182,14 @@ watch(gameClock, async ([measure, beat]) => {
 
 props.TheGameConnector.callbacks["sync-game-state"] = {
   resolve: (content: DataConnectionEvent["content"]) => {
-    const { gameBoard, endOfPhrase } = content;
-    const localEndOfPhrase = TheGameRunner.msUntilEndOfPhrase
-    console.clear();
-    console.log(content);
-    console.log(localEndOfPhrase);
+    if (TheGameRunner.measure !== 2) throw "Error: Too far out to sync";
+
+    const { moveMeasureEnd, stamp } = content;
+    const theirEnd = moveMeasureEnd + stamp;
+    const myEnd =
+      (11 - TheGameRunner.beat + 12) * TheGameRunner.bpm + Date.now();
+
+    TheGameRunner.moveMeasureCatchup = theirEnd - myEnd;
 
     return content;
   },
