@@ -9,7 +9,7 @@
           type="text"
           readonly
           class="w-full"
-          :value="`localhost:3000/play?id=${id}&role=${'client'}&secret=${secret}`"
+          :value="`${host}/play?id=${id}&role=${'client'}&secret=${secret}`"
         />
       </template>
     </template>
@@ -30,6 +30,7 @@ const id: string = `${route.query.id}`;
 const role: "host" | "client" =
   `${route.query.role}` === "host" ? "host" : "client";
 const secret: string = `${route.query.secret}`;
+const host = window.location.origin;
 
 const status = ref<
   | "connecting-to-servers"
