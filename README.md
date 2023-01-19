@@ -59,7 +59,3 @@ Chess, except
 ## Stage 3 (final) -- Multimove
 
 * For an exponentially increasing price, you can move multiple distinct pieces within the same turn.
-
-
-
-
