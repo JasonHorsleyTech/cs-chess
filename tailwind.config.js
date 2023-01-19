@@ -49,12 +49,17 @@ module.exports = {
             borderRadius: "0%",
           },
         },
+        blink: {
+          "0%": { visibility: "visible" },
+          "50%": { visibility: "hidden" },
+        },
       },
       animation: {
         wiggle: "wiggle 0.3s ease-in-out infinite",
         fallin: "fallin 5s ease-in-out forwards",
         wave: "wave 1s ease-in-out infinite",
         growFromCircle: "growFromCircle 2s linear 1 forwards",
+        blink: "blink 1s steps(1, start) infinite",
       },
     },
   },

@@ -34,6 +34,6 @@
 @layer base {
   html {
     font-family: "PixeloidMono";
-    @apply text-base leading-none;
+    @apply text-base leading-none text-white;
   }
 }

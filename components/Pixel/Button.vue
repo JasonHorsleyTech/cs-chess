@@ -1,6 +1,7 @@
 <template>
   <button
     class="group relative text-xl cursor-pointer disabled:cursor-default disabled:pointer-events-none"
+    :disabled="disabled || loading"
   >
     <div
       :class="[
@@ -12,11 +13,20 @@
       :class="[
         'relative px-4 py-2 border-2 bg-white -translate-y-[2px] -translate-x-[2px] font-semibold',
         'group-active:translate-x-0 group-active:translate-y-0',
+        'group-hover:-translate-y-[3px]',
         colors.border,
         colors.text,
       ]"
     >
-      <slot />
+      <span :class="[!loading ? 'opacity-100' : 'opacity-0']">
+        <slot />
+      </span>
+      <span
+        class="absolute grid h-full w-full top-0 left-0 place-content-center"
+        v-if="loading"
+      >
+        <SvgCircle class="animate-spin h-5 w-5" />
+      </span>
     </p>
   </button>
 </template>
@@ -25,9 +35,13 @@
 const props = withDefaults(
   defineProps<{
     type?: "info" | "success" | "warning" | "error";
+    loading?: boolean;
+    disabled?: boolean;
   }>(),
   {
     type: "info",
+    loading: false,
+    disabled: false,
   }
 );
 const colors = computed(() => {
