@@ -169,6 +169,12 @@ export default class GameRunner {
     }
 
     if (this.measure === 0 && this.beat === 0) {
+      if (this.moveMeasureCatchup !== 0) {
+        this.moveMeasureCatchup = 0;
+        this.stop();
+        this.start(this.bpm);
+      }
+
       // Need to loop one final time at measure0 beat0, running same collision logic
       if (this.gameMode === "move") {
         this.stepPieces(12);
