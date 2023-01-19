@@ -62,6 +62,21 @@
         </h2>
       </div>
     </div>
+
+    <div class="grid pt-8 gap-4">
+      <Notification> Purchase and place pieces on the board </Notification>
+      <Notification>
+        You can only purchase/place for the first 2½ measures, after that both
+        players boards need to "sync up"
+      </Notification>
+      <Notification>
+        To start playing, both players must have a piece on the board, and skip
+        a purchase turn.
+      </Notification>
+      <Notification type="warning">
+        If you start without a king, you'll automatically lose!
+      </Notification>
+    </div>
   </div>
 </template>
 

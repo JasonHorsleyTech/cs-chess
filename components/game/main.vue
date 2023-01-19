@@ -197,6 +197,7 @@ props.TheGameConnector.callbacks["sync-game-state"] = {
 
     TheGameRunner.moveMeasureCatchup = theirEnd - myEnd;
 
+    console.log(TheGameRunner.moveMeasureCatchup)
     return content;
   },
   reject: () => {},

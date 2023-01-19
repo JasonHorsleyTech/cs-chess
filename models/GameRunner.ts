@@ -180,11 +180,7 @@ export default class GameRunner {
         this.stepPieces(12);
         this.clearMovementPathing();
       } else if (this.gameMode === "purchase") {
-        if (
-          this.purchasesPendingCount === 0 &&
-          this.boardKings.whiteKing &&
-          this.boardKings.blackKing
-        ) {
+        if (this.purchasesPendingCount === 0 && this.startingBoardValid) {
           this.gameMode = "move";
         }
 
@@ -235,8 +231,18 @@ export default class GameRunner {
     return piece;
   }
 
-  get boardHasPieces(): boolean {
-    return !this.gameBoard.flat().every((s) => s === null);
+  get startingBoardValid(): boolean {
+    let whiteCount = 0;
+    let blackCount = 0;
+
+    this.gameBoard.flat().map((piece) => {
+      if (piece !== null) {
+        if (piece.player === "white") whiteCount++;
+        if (piece.player === "black") blackCount++;
+      }
+    });
+
+    return whiteCount > 0 && blackCount > 0;
   }
 
   get boardKings(): { blackKing: Piece | false; whiteKing: Piece | false } {

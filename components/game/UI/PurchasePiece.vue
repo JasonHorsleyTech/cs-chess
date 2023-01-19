@@ -42,10 +42,8 @@
   </div>
 </template>
 <script lang="ts" setup>
-import Piece from "../Piece.vue";
-
 const props = defineProps<{
-  pieceType: PieceTypes
+  pieceType: PieceTypes;
   player: "black" | "white";
   price: number;
   count: number;

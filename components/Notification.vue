@@ -1,19 +1,18 @@
 <template>
   <p
-    class="flex font-semibold gap-x-1 items-center w-full border px-2 py-1 text-lg rounded-xl"
+    class="flex font-semibold gap-x-1 items-start w-full border px-2 py-1 text-base rounded-xl"
     :class="[colors.text, colors.bg, colors.border]"
   >
-    <svg
-      class="h-6"
-      :class="[colors.icon]"
-      viewBox="0 0 512 512"
-      fill="currentColor"
+    <SvgInfo
       v-if="props.type === 'info'"
-    >
-      <path
-        d="M256 512c141.4 0 256-114.6 256-256S397.4 0 256 0S0 114.6 0 256S114.6 512 256 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-144c-17.7 0-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32z"
-      />
-    </svg>
+      class="h-5 w-5 shrink-0 m-[2px]"
+      :class="[colors.icon]"
+    />
+    <SvgWarning
+      class="h-5 w-5 shrink-0 m-[2px]"
+      :class="[colors.icon]"
+      v-else-if="props.type === 'warning'"
+    />
     <slot />
   </p>
 </template>
@@ -41,9 +40,10 @@ const colors = computed(() => {
       bg: "",
     },
     warning: {
-      icon: "",
-      text: "",
-      bg: "",
+      icon: "text-red-600",
+      text: "text-red-900",
+      bg: "bg-red-200",
+      border: "border-red-900",
     },
     error: {
       icon: "",
