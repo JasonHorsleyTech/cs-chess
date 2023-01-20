@@ -2,7 +2,7 @@
   <p class="px-4" v-if="label" v-text="label" />
   <div class="flex flex-nowrap gap-x-2">
     <label
-      class="relative grid place-content-center grow group text-xl py-2 px-4"
+      class="relative overflow-hidden grid place-content-center grow group text-xl py-2 px-4"
     >
       <textarea
         ref="input"
@@ -39,10 +39,10 @@
       />
 
       <p
-        class="absolute text-white left-4 top-1/2 -translate-y-1/2 pointer-events-none hidden peer-focus:block"
+        class="absolute overflow-hidden text-white left-4 top-1/2 -translate-y-1/2 pointer-events-none /hidden peer-focus:block"
       >
         <span
-          class="opacity-0"
+          class="opacity-0 whitespace-nowrap"
           v-text="modelValue.slice(0, insertionPoint.location)"
         ></span>
         <span
@@ -79,10 +79,13 @@ const emit = defineEmits<{
 
 const valueProxy = computed({
   get() {
-    return props.modelValue;
+    console.log(props.modelValue);
+    console.log(props.modelValue.replace(/(\r\n|\n|\r)/gm, ""));
+    return props.modelValue.replace(/(\r\n|\n|\r)/gm, "");
   },
   set(value) {
     emit("update:modelValue", value);
+    fixInsertionPoint();
   },
 });
 
@@ -99,9 +102,10 @@ const insertionPoint = reactive<{
 });
 
 // TODO: Add correct event type, the one with selectionStart
-const fixInsertionPoint = (event: Event) => {
-  const { selectionStart, selectionEnd, scrollLeft } =
-    event.target as HTMLInputElement;
+const fixInsertionPoint = () => {
+  if (!input.value) throw "Input not found";
+  console.log("fixing");
+  const { selectionStart, selectionEnd, scrollLeft } = input.value;
 
   if (selectionStart === null || selectionEnd === null || scrollLeft === null)
     return;
@@ -117,6 +121,9 @@ onMounted(() => {
     input.value.focus();
   }
 
+  input.value.addEventListener("keydown", (event) => {
+    if (event.code === "Enter") event.preventDefault();
+  });
   input.value.addEventListener("keyup", fixInsertionPoint);
   input.value.addEventListener("mouseup", fixInsertionPoint);
 });

@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[100vh] w-[100vw] bg-gray-900 grid place-content-center">
+  <div class="h-[100vh] w-[100vw] bg-gray-900 grid place-content-center overflow-hidden">
     <div
       class="max-w-6xl py-16 px-8 grid gap-x-8 gap-y-16 grid-cols-2 place-items-center border-8"
     >
@@ -25,7 +25,7 @@
           <p v-else class="grid gap-y-2">
             <span>Share this code with your opponent</span>
             <span
-              class="border-white border rounded text-white text-xs p-1"
+              class="border-white border rounded text-white text-xs p-1 text-center"
               v-text="generatedHostCode"
             />
           </p>
@@ -65,6 +65,7 @@
 <script setup lang="ts">
 import { Peer } from "peerjs";
 import { v4 as uuidv4 } from "uuid";
+const route = useRoute();
 
 let ThePeerInstance: Peer;
 const secret = uuidv4();
