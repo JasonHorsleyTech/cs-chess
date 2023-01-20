@@ -17,19 +17,20 @@
       ></div>
 
       <span
-        class="rounded-md border font-bold text-center px-1 text-xs mx-auto -translate-y-1/2 shadow"
+        class="absolute rounded-md border font-bold text-center px-2 py-1 text-xs shadow bottom-0 left-1/2 -translate-x-1/2 translate-y-1/4"
         :class="[countColor]"
       >
-        {{ price === 0 ? "Free!" : `$${price}` }}
+        {{ price === 0 ? "Free" : `$${price}` }}
       </span>
     </div>
 
-    <Piece
+    <GamePiece
       :piece-type="pieceType"
       :player="player"
       :class="[selected ? 'animate-wiggle' : '']"
       :stunned="false"
-    ></Piece>
+      class="h-6 w-6"
+    ></GamePiece>
 
     <span
       class="absolute top-0 right-0 rounded-full w-4 h-4 overflow-hidden text-[8px] font-bold border"

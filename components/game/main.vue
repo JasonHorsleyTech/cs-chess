@@ -197,7 +197,7 @@ props.TheGameConnector.callbacks["sync-game-state"] = {
 
     TheGameRunner.moveMeasureCatchup = theirEnd - myEnd;
 
-    console.log(TheGameRunner.moveMeasureCatchup)
+    console.log(TheGameRunner.moveMeasureCatchup);
     return content;
   },
   reject: () => {},
@@ -212,9 +212,9 @@ const tutorialFinished = async () => {
 };
 props.TheGameConnector.callbacks["tutorial-finished"] = {
   resolve: (content: DataConnectionEvent["content"]) => {
-    console.log(content)
+    console.log(content);
     if (content.ready && tutorialFinishedLocally) {
-        startGame();
+      startGame();
     }
     return Object.assign(content, { ready: tutorialFinishedLocally });
   },
@@ -238,6 +238,7 @@ const startGame = async () => {
 };
 onMounted(() => {
   // If skipTutorial option checked, startGame()
+//   startGame();
 });
 onUnmounted(() => {
   TheGameRunner.stop();

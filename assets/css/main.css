@@ -33,7 +33,7 @@
 
 @layer base {
   html {
-    font-family: "PixeloidMono";
+    font-family: "Quinquefive";
     @apply text-base leading-none text-white;
   }
 }

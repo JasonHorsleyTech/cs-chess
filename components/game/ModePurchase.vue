@@ -30,10 +30,8 @@
           v-if="TheGameRunner.syncing"
           class="text-2xl grid place-content-center h-full text-red-900 font-bold animate-pulse text-center"
         >
-          <span v-if="!TheGameRunner.boardHasPieces">Sycning</span>
-          <span v-else-if="TheGameRunner.purchasesPendingCount === 0"
-            >Starting the game!</span
-          >
+          <span v-if="!TheGameRunner.startingBoardValid">Sycning</span>
+          <span v-else>Starting the game!</span>
         </div>
       </template>
     </GameBoard>
