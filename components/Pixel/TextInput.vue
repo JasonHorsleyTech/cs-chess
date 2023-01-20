@@ -79,12 +79,10 @@ const emit = defineEmits<{
 
 const valueProxy = computed({
   get() {
-    console.log(props.modelValue);
-    console.log(props.modelValue.replace(/(\r\n|\n|\r)/gm, ""));
     return props.modelValue.replace(/(\r\n|\n|\r)/gm, "");
   },
   set(value) {
-    emit("update:modelValue", value);
+    emit("update:modelValue", value.replace(/(\r\n|\n|\r)/gm, ""));
     fixInsertionPoint();
   },
 });
@@ -104,7 +102,6 @@ const insertionPoint = reactive<{
 // TODO: Add correct event type, the one with selectionStart
 const fixInsertionPoint = () => {
   if (!input.value) throw "Input not found";
-  console.log("fixing");
   const { selectionStart, selectionEnd, scrollLeft } = input.value;
 
   if (selectionStart === null || selectionEnd === null || scrollLeft === null)

@@ -149,14 +149,14 @@ export default class GameConnector {
       const rejectCallback = (reason = "") => {
         reject(reason);
       };
-      const pingFail = window.setTimeout(() => {
-        rejectCallback("Ping timed out");
-      }, 1000);
+    //   const pingFail = window.setTimeout(() => {
+    //     rejectCallback("Ping timed out");
+    //   }, 1000);
 
       this.callbacks["ping"] = {
         reject: rejectCallback,
         resolve: (content: DataConnectionEvent["content"]) => {
-          clearTimeout(pingFail);
+        //   clearTimeout(pingFail);
 
           this.oneWayPing = Date.now() - content.stamp;
           if (this.oneWayPing >= this.#maxPing) {
