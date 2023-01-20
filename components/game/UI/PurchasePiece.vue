@@ -33,10 +33,10 @@
     ></GamePiece>
 
     <span
-      class="absolute top-0 right-0 rounded-full w-4 h-4 overflow-hidden text-[8px] font-bold border"
+      class="absolute top-0 right-0 rounded-full w-5 h-5 overflow-hidden text-[8px] font-bold border"
       :class="countColor"
     >
-      <span class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+      <span class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 pl-[1px]">
         {{ count }}
       </span>
     </span>
