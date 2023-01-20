@@ -1,13 +1,16 @@
 <template>
   <p class="px-4" v-if="label" v-text="label" />
   <div class="flex flex-nowrap gap-x-2">
-    <label class="relative grow group text-xl">
-      <input
+    <label
+      class="relative grid place-content-center grow group text-xl py-2 px-4"
+    >
+      <textarea
         ref="input"
-        type="text"
+        rows="1"
+        cols="14"
         v-model="valueProxy"
-        class="peer bg-transparent py-2 px-4 text-white !outline-none decoration-transparent text-gray-200/90 focus:text-white"
-        style="caret-color: transparent"
+        class="peer bg-transparent text-white !outline-none decoration-transparent text-gray-200/90 focus:text-white selection:bg-transparent whitespace-nowrap overflow-hidden"
+        style="caret-color: transparent; resize: none"
       />
 
       <div
@@ -36,10 +39,24 @@
       />
 
       <p
-        class="absolute py-2 px-4 text-white top-0 pointer-events-none hidden peer-focus:block"
+        class="absolute text-white left-4 top-1/2 -translate-y-1/2 pointer-events-none hidden peer-focus:block"
       >
-        <span v-text="props.modelValue"></span>
-        <span class="border-b-[2px] animate-blink text-transparent">M</span>
+        <span
+          class="opacity-0"
+          v-text="modelValue.slice(0, insertionPoint.location)"
+        ></span>
+        <span
+          :key="insertionPoint.location"
+          class="animate-blink text-transparent"
+          :class="[insertionPoint.width === 1 ? 'border-b-[2px]' : 'bg-white']"
+          :style="`margin-left: ${-1 * insertionPoint.left}px`"
+        >
+          <span
+            v-for="i in Math.max(insertionPoint.width - 1, 1)"
+            :key="i"
+            v-text="'M'"
+          />
+        </span>
       </p>
     </label>
     <slot name="button" />
@@ -71,9 +88,36 @@ const valueProxy = computed({
 
 const input = ref<HTMLInputElement>();
 
+const insertionPoint = reactive<{
+  location: number;
+  width: number;
+  left: number;
+}>({
+  location: 0,
+  width: 1,
+  left: 0,
+});
+
+// TODO: Add correct event type, the one with selectionStart
+const fixInsertionPoint = (event: Event) => {
+  const { selectionStart, selectionEnd, scrollLeft } =
+    event.target as HTMLInputElement;
+
+  if (selectionStart === null || selectionEnd === null || scrollLeft === null)
+    return;
+  insertionPoint.left = scrollLeft;
+  insertionPoint.location = selectionStart;
+  insertionPoint.width = selectionEnd - selectionStart + 1;
+};
+
 onMounted(() => {
-  if (props.autofocus && input.value) {
+  if (!input.value) throw "Input not found";
+
+  if (props.autofocus) {
     input.value.focus();
   }
+
+  input.value.addEventListener("keyup", fixInsertionPoint);
+  input.value.addEventListener("mouseup", fixInsertionPoint);
 });
 </script>

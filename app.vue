@@ -17,7 +17,19 @@
       </PixelButton>
 
       <div>
-        <PixelLoader v-if="hosting" message="Connecting to the moon" />
+        <template v-if="hosting">
+          <PixelLoader
+            v-if="!generatedHostCode"
+            message="Connecting to the moon"
+          />
+          <p v-else class="grid gap-y-2">
+            <span>Share this code with your opponent</span>
+            <span
+              class="border-white border rounded text-white text-xs p-1"
+              v-text="generatedHostCode"
+            />
+          </p>
+        </template>
       </div>
 
       <PixelButton
@@ -33,7 +45,7 @@
         <PixelTextInput
           v-if="joining"
           label="Paste gamecode here"
-          v-model="hostCode"
+          v-model="enteredHostCost"
         >
           <template #button>
             <PixelButton
@@ -53,17 +65,37 @@
 <script setup lang="ts">
 import { Peer } from "peerjs";
 import { v4 as uuidv4 } from "uuid";
+
+let ThePeerInstance: Peer;
 const secret = uuidv4();
+const status = ref<
+  | "connecting-to-servers"
+  | "waiting-for-other-players"
+  | "connecting-to-host"
+  | "testing-connection-strength"
+  | "connected"
+  | "disconnected"
+>("connecting-to-servers");
+const error = ref<null | string>();
 
 const connectingToPeerInstace = ref<boolean>(false);
 
+// Does the player want to host?
 const hosting = ref<boolean>(false);
+// This is the host's ID
+const generatedHostCode = ref<string>("");
+
+// Does the palyer want to join?
+const joining = ref<boolean>(false);
+// This is what the client think's their host ID is
+const enteredHostCost = ref<string>("");
+
 const hostGame = () => {
   hosting.value = true;
   connectingToPeerInstace.value = true;
   const PeerInstance = new Peer();
   PeerInstance.on("open", (id: string) => {
-    console.log(id);
+    generatedHostCode.value = id;
     // PeerInstance.on("disconnected", () => {
     //   navigateTo({
     //     path: "/play",
@@ -79,8 +111,6 @@ const hostGame = () => {
   });
 };
 
-const hostCode = ref<string>("");
-const joining = ref<boolean>(false);
 const joinGame = () => {
   connectingToPeerInstace.value = true;
 };

@@ -50,8 +50,10 @@ module.exports = {
           },
         },
         blink: {
-          "0%": { visibility: "visible" },
-          "50%": { visibility: "hidden" },
+            "0%": { opacity: 1 },
+            "49%": { opacity: 1 },
+            "50%": { opacity: 0 },
+            "100%": { opacity: 0 },
         },
       },
       animation: {
@@ -59,7 +61,7 @@ module.exports = {
         fallin: "fallin 5s ease-in-out forwards",
         wave: "wave 1s ease-in-out infinite",
         growFromCircle: "growFromCircle 2s linear 1 forwards",
-        blink: "blink 1s steps(1, start) infinite",
+        blink: "blink 1s linear infinite",
       },
     },
   },
