@@ -9,11 +9,20 @@ module.exports = {
     "./app.vue",
   ],
   theme: {
+    fontSize: {
+      sm: ["0.8rem", "1rem"],
+      base: ["1rem", "1.25rem"],
+      xl: ["1.25rem", "1.563rem"],
+      "2xl": ["1.563rem", "1.953rem"],
+      "3xl": ["1.953rem", "1.441rem"],
+      "4xl": ["2.441rem", "3.052rem"],
+      "5xl": ["3.052rem", "3.5rem"],
+    },
     extend: {
       keyframes: {
         wiggle: {
-          "0%, 100%": { transform: "rotate(-3deg)" },
-          "50%": { transform: "rotate(3deg)" },
+          "0%, 100%": { transform: "rotate(-6deg)" },
+          "50%": { transform: "rotate(6deg)" },
         },
         fallin: {
           "0%": { transform: "translateY(-200%)" },
@@ -50,10 +59,10 @@ module.exports = {
           },
         },
         blink: {
-            "0%": { opacity: 1 },
-            "49%": { opacity: 1 },
-            "50%": { opacity: 0 },
-            "100%": { opacity: 0 },
+          "0%": { opacity: 1 },
+          "49%": { opacity: 1 },
+          "50%": { opacity: 0 },
+          "100%": { opacity: 0 },
         },
       },
       animation: {

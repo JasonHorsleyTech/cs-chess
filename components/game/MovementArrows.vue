@@ -19,6 +19,10 @@ const props = defineProps<{
   player: "black" | "white";
 }>();
 
+const movements = computed(() => {
+  return props.piecesWithMovement;
+});
+
 const movementArrowCanvas = ref<HTMLCanvasElement | null>(null);
 
 const render = (newMovement: Array<Piece>) => {
@@ -89,12 +93,12 @@ const render = (newMovement: Array<Piece>) => {
   });
 };
 
-watch(props.piecesWithMovement, (newPathing) => {
-  render(newPathing);
+watch(movements, () => {
+  render(movements.value);
 });
 
 onMounted(() => {
-  render(props.piecesWithMovement);
+  render(movements.value);
 });
 
 const canvas_arrow = (

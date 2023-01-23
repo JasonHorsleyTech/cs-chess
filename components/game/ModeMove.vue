@@ -32,7 +32,11 @@
           :pieceType="piece.type"
           :player="piece.player"
           :stunned="piece.stunned"
-          :class="[pieceSelected === piece ? 'animate-wiggle bg-black/25' : '']"
+          :class="[
+            pieceSelected && pieceSelected.location === piece.location
+              ? 'animate-wiggle'
+              : '',
+          ]"
         />
       </template>
       <!-- <template #square="{ r, c }">
