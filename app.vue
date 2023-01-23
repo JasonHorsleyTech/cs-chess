@@ -10,14 +10,18 @@
         v-if="!ready"
         class="grid gap-x-8 gap-y-16 grid-cols-2 place-items-center"
       >
-        <PixelText
-          text="cs-chess"
-          :animate="true"
-          :class="[
-            'col-span-2',
-            '[&_.isPixel]:md:h-4 [&_.isPixel]:md:w-4 [&_.isPixel]:lg:h-6 [&_.isPixel]:lg:w-6',
-          ]"
-        ></PixelText>
+        <div class="col-span-2 grid gap-y-4">
+          <PixelText
+            text="cs-chess"
+            :animate="true"
+            :class="[
+              '[&_.isPixel]:md:h-4 [&_.isPixel]:md:w-4 [&_.isPixel]:lg:h-6 [&_.isPixel]:lg:w-6',
+            ]"
+          ></PixelText>
+          <p class="text-[5px] text-green-200 tracking-widest text-right pr-4">
+            {{ `V ${version}` }}
+          </p>
+        </div>
 
         <template v-if="!resuming">
           <PixelButton
@@ -108,6 +112,7 @@ import { Peer } from "peerjs";
 import { v4 as uuidv4 } from "uuid";
 import type { DataConnection } from "peerjs";
 import GameConnector from "./models/GameConnector";
+import { version } from "./package.json";
 
 let ThePeerInstance: Peer;
 let TheGameConnector: GameConnector;
