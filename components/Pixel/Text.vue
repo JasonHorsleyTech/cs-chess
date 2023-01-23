@@ -16,6 +16,7 @@
         <div :class="['isPixel']" class="bg-transparent" />
       </div>
     </div>
+    <slot />
   </div>
 </template>
 <script lang="ts" setup>
