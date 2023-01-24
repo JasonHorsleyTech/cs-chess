@@ -2,11 +2,13 @@
   "private": true,
   "version": "0.0.2",
   "scripts": {
+    "start": "nuxt start",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "heroku-postbuild": "npm run build"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.9",
